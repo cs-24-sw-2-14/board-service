@@ -1,0 +1,19 @@
+{
+  "name": "magicboard-backend",
+  "version": "1.0.0",
+  "description": "Backend for the Magicboard project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cs-24-sw-2-14/MagicBoard-backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cs-24-sw-2-14/MagicBoard-backend/issues"
+  },
+  "homepage": "https://github.com/cs-24-sw-2-14/MagicBoard-backend#readme"
+}
