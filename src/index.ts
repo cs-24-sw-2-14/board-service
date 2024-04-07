@@ -1,5 +1,4 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
- 
 const port = 3001;
  
 const server = createServer((request: IncomingMessage, response: ServerResponse) => {

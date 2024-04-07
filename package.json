@@ -2,18 +2,19 @@
   "name": "magicboard-backend",
   "version": "1.0.0",
   "description": "Backend for the Magicboard project",
-  "main": "index.ts",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "ts-node ./src/index.ts",
+    "dev": "ts-node-dev --respawn ./src/index.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cs-24-sw-2-14/MagicBoard-backend.git"
-  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/cs-24-sw-2-14/MagicBoard-backend/issues"
-  },
-  "homepage": "https://github.com/cs-24-sw-2-14/MagicBoard-backend#readme"
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.3"
+  }
 }
