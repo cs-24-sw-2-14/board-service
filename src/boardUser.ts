@@ -2,13 +2,13 @@
  * Strictly contains all information about a user.
  */
 class BoardUser {
-    PreferedColor?: UserColor;
     Client: NetworkedBoardUser;
     Username: Username;
+    Color: UserColor;
 
-    constructor(client: NetworkedBoardUser, username: Username, preferedColor?: UserColor) {
+    constructor(client: NetworkedBoardUser, username: Username, color: UserColor) {
         this.Client = client;
         this.Username = username;
-        this.PreferedColor = preferedColor;
+        this.Color = color;
     }
 }
