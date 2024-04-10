@@ -3,9 +3,11 @@
  */
 class BoardUser {
     PreferedColor?: UserColor;
+    Client: NetworkedBoardUser;
     Username: Username;
 
-    constructor(username: Username, preferedColor?: UserColor) {
+    constructor(client: NetworkedBoardUser, username: Username, preferedColor?: UserColor) {
+        this.Client = client;
         this.Username = username;
         this.PreferedColor = preferedColor;
     }
