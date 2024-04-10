@@ -2,10 +2,10 @@
  * Strictly contains all information about a user.
  */
 class BoardUser {
-    Username: string;
     PreferedColor?: UserColor;
+    Username: Username;
 
-    constructor(username: string, preferedColor?: UserColor) {
+    constructor(username: Username, preferedColor?: UserColor) {
         this.Username = username;
         this.PreferedColor = preferedColor;
     }
