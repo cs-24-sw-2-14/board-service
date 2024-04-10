@@ -1,4 +1,7 @@
-class User {
+/**
+ * Strictly contains all information about a user.
+ */
+class BoardUser {
     Username: string;
     PreferedColor?: UserColor;
 
