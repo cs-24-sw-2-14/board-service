@@ -14,7 +14,11 @@ enum UserColor {
 }
 
 class User {
-    constructor(userName: string, preferedColor?: UserColor) {
-        
+    Username: string;
+    PreferedColor?: UserColor;
+
+    constructor(username: string, preferedColor?: UserColor) {
+        this.Username = username;
+        this.PreferedColor = preferedColor;
     }
 }
