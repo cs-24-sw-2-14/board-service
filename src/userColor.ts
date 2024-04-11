@@ -1,4 +1,4 @@
-enum UserColor {
+export enum UserColor {
   Red,
   Blue,
   Green,

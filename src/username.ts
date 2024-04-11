@@ -1,1 +1,1 @@
-type Username = string;
+export type Username = string;
