@@ -1,0 +1,8 @@
+openapi: 3.0.3
+info:
+  title: MagicBoard - Rest API
+  description: |-
+    Write short description.
+  version: "1.0"
+servers:
+  - url: http://64.227.121.226/
