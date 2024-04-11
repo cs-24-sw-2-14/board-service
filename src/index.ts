@@ -1,10 +1,4 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
-const port = 3001;
- 
-const server = createServer((request: IncomingMessage, response: ServerResponse) => {
-  response.end('Hello world!');
-});
- 
-server.listen(port, () => {
-	console.log(`Server listening on port ${port}`);
-});
+import { Server } from "./server";
+
+const server = new Server(8008);
+server.StartServerAsync();
