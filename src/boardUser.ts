@@ -1,7 +1,11 @@
 /**
  * Strictly contains all information about a user.
  */
-class BoardUser {
+import { NetworkedBoardUser } from "./networkedBoardUser";
+import { Username } from "./username";
+import { UserColor } from "./userColor";
+
+export class BoardUser {
     Client: NetworkedBoardUser;
     Username: Username;
     Color: UserColor;

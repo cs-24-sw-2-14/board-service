@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 
-class NetworkedBoardUser {
+export class NetworkedBoardUser {
   WebSocket: WebSocket;
 
   constructor(webSocket: WebSocket) {
