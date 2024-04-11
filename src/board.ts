@@ -1,7 +1,10 @@
 /**
  * The instance of a board.
  */
-class Board {
+import { BoardUser } from "./boardUser";
+import { BoardUID } from "./boardUID";
+
+export class Board {
   UID: BoardUID;
   Users: BoardUser[] = [];
 
