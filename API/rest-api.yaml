@@ -5,4 +5,4 @@ info:
     Write short description.
   version: "1.0"
 servers:
-  - url: http://64.227.121.226/
+  - url: http://64.227.121.226
