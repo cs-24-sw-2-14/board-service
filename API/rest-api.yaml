@@ -24,6 +24,20 @@ paths:
           $ref: '#/components/responses/board_uid_valid'
         '400':
           $ref: '#/components/responses/board_uid_missing'
+  /v1/board/czech_uid:
+    get:
+      tags:
+        - Board
+      summary: Checks whether a UID exists
+      description: Takes a board UID and checks whether the board exists.
+      operationId: checkUID
+      parameters:
+        - $ref: '#/components/parameters/board_uid'
+      responses:
+        '200':
+          $ref: '#/components/responses/does_board_exist'
+        '400':
+          $ref: '#/components/responses/board_uid_missing'
 
 components:
   schemas:
@@ -42,6 +56,13 @@ components:
   responses:
     board_uid_valid:
       description: Whether Board UID is valid.
+      content:
+        application/json:
+          schema:
+            type: boolean
+            example: true
+    does_board_exist:
+      description: Whether the Board exists, based on Board UID.
       content:
         application/json:
           schema:
