@@ -14,7 +14,7 @@ paths:
     get:
       tags:
         - Board
-      summary: Validates a board UID.
+      summary: Validates a board UID
       description: Takes a board UID and validates it.
       operationId: validateUID
       parameters:
