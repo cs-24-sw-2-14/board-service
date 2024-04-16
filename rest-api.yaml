@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: MagicBoard - Rest API
+  description: |-
+    Write short description.
+  version: "1.0"
+servers:
+  - url: http://64.227.121.226
+tags:
+  - name: Board
+    description: Related to boards.
+paths:
+  /v1/board/validate_uid:
+    get:
+      tags:
+        - Board
+      summary: Validates a board UID
+      description: Takes a board UID and validates it.
+      operationId: validateUID
+      parameters:
+        - $ref: '#/components/parameters/board_uid'
+      responses:
+        '200':
+          $ref: '#/components/responses/board_uid_valid'
+        '400':
+          $ref: '#/components/responses/board_uid_missing'
+  /v1/board/czech_uid:
+    get:
+      tags:
+        - Board
+      summary: Checks whether a UID exists
+      description: Takes a board UID and checks whether the board exists.
+      operationId: checkUID
+      parameters:
+        - $ref: '#/components/parameters/board_uid'
+      responses:
+        '200':
+          $ref: '#/components/responses/does_board_exist'
+        '400':
+          $ref: '#/components/responses/board_uid_missing'
+
+components:
+  schemas:
+    board_uid:
+      type: string
+      minLength: 6
+      maxLength: 6
+  parameters:
+    board_uid:
+      name: board_uid
+      in: query
+      description: UID of a board.
+      required: true
+      schema:
+        $ref: '#/components/schemas/board_uid'
+  responses:
+    board_uid_valid:
+      description: Whether Board UID is valid.
+      content:
+        application/json:
+          schema:
+            type: boolean
+            example: true
+    does_board_exist:
+      description: Whether the Board exists, based on Board UID.
+      content:
+        application/json:
+          schema:
+            type: boolean
+            example: true
+    board_uid_missing:
+      description: Board UID was not supplied.
+      content:
+        text/html:
+          schema:
+            type: string
+            example: <p>board_uid parameter missing.</p>
