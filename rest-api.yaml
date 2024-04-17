@@ -38,6 +38,26 @@ paths:
           $ref: '#/components/responses/does_board_exist'
         '400':
           $ref: '#/components/responses/board_uid_missing'
+  /v1/board/create:
+    post:
+      tags:
+        - Board
+      summary: Creates a new board
+      operationId: createBoard
+      responses:
+        '200':
+          $ref: '#/components/responses/create_board'
+  /v1/board/join:
+    get:
+      tags:
+        - Board
+      summary: Get invite to websocket server
+      operationId: joinBoard
+      parameters:
+        - $ref: '#/components/parameters/board_uid'
+      responses:
+        '200':
+          $ref: '#/components/responses/join_board'
 
 components:
   schemas:
@@ -45,6 +65,22 @@ components:
       type: string
       minLength: 6
       maxLength: 6
+      example: AB4D3G
+    board_create_result:
+      type: object
+      properties:
+        board_uid:
+          $ref: '#/components/schemas/board_uid'
+    board_join_result:
+      type: object
+      properties:
+        host:
+          type: string
+          format: ip
+          example: 127.0.0.1
+        port:
+          type: integer
+          example: 25565
   parameters:
     board_uid:
       name: board_uid
@@ -61,6 +97,18 @@ components:
           schema:
             type: boolean
             example: true
+    join_board:
+      description: Board joined??
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/board_join_result'
+    create_board:
+      description: Returns Board UID of successfully create board.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/board_create_result'
     does_board_exist:
       description: Whether the Board exists, based on Board UID.
       content:
