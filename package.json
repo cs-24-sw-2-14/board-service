@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "ts-node ./src/index.ts",
-    "dev": "ts-node-dev --respawn ./src/index.ts"
+    "dev": "ts-node-dev --respawn ./src/index.ts",
+    "codegen-restapi": "java -jar openapi-generator-cli.jar generate -g nodejs-express-server -i API/rest-api.yaml -o src/rest_api"
   },
   "keywords": [],
   "author": "",
