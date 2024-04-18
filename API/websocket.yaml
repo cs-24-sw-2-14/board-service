@@ -1,0 +1,32 @@
+asyncapi: '3.0.0'
+info:
+  title: Magicboard Commands
+  version: '1.0.0'
+  description: |
+    Describe your API here. Include its purpose, functionality, and any other relevant information.
+servers:
+  - url: 'api.example.com'
+    protocol: wss
+    description: Production Server
+channels:
+  channelName:
+    description: Describe what this channel is used for.
+    subscribe:
+      operationId: subscribeToChannel
+      message:
+        $ref: '#/components/messages/MessageName'
+    publish:
+      operationId: publishToChannel
+      message:
+        $ref: '#/components/messages/MessageName'
+components:
+  messages:
+    MessageName:
+      payload:
+        type: object
+        properties:
+          exampleProperty:
+            type: string
+        required:
+          - exampleProperty
+
