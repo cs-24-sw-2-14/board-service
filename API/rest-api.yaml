@@ -1,14 +1,18 @@
 openapi: 3.0.3
+
 info:
   title: MagicBoard - Rest API
   description: |-
     Write short description.
   version: "1.0"
+
 servers:
   - url: http://64.227.121.226
+
 tags:
   - name: Board
     description: Related to boards.
+
 paths:
   /v1/board/validate_uid:
     get:
@@ -99,6 +103,7 @@ components:
         port:
           type: integer
           example: 25565
+
   parameters:
     board_uid:
       name: board_uid
@@ -107,6 +112,7 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/board_uid'
+
   responses:
     board_uid_missing:
       description: Board UID was not supplied.
