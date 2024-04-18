@@ -21,7 +21,12 @@ paths:
         - $ref: '#/components/parameters/board_uid'
       responses:
         '200':
-          $ref: '#/components/responses/board_uid_valid'
+          description: Whether Board UID is valid.
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
         '400':
           $ref: '#/components/responses/board_uid_missing'
   /v1/board/czech_uid:
@@ -35,7 +40,12 @@ paths:
         - $ref: '#/components/parameters/board_uid'
       responses:
         '200':
-          $ref: '#/components/responses/does_board_exist'
+          description: Whether the Board exists, based on Board UID.
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
         '400':
           $ref: '#/components/responses/board_uid_missing'
   /v1/board/create:
@@ -46,7 +56,11 @@ paths:
       operationId: createBoard
       responses:
         '200':
-          $ref: '#/components/responses/create_board'
+          description: Returns Board UID of successfully create board.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/board_create_result'
   /v1/board/join:
     get:
       tags:
@@ -57,7 +71,11 @@ paths:
         - $ref: '#/components/parameters/board_uid'
       responses:
         '200':
-          $ref: '#/components/responses/join_board'
+          description: Board joined??
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/board_join_result'
 
 components:
   schemas:
@@ -90,32 +108,6 @@ components:
       schema:
         $ref: '#/components/schemas/board_uid'
   responses:
-    board_uid_valid:
-      description: Whether Board UID is valid.
-      content:
-        application/json:
-          schema:
-            type: boolean
-            example: true
-    join_board:
-      description: Board joined??
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/board_join_result'
-    create_board:
-      description: Returns Board UID of successfully create board.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/board_create_result'
-    does_board_exist:
-      description: Whether the Board exists, based on Board UID.
-      content:
-        application/json:
-          schema:
-            type: boolean
-            example: true
     board_uid_missing:
       description: Board UID was not supplied.
       content:
