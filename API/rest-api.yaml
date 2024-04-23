@@ -3,7 +3,7 @@ openapi: 3.0.3
 info:
   title: MagicBoard - Rest API
   description: |-
-    Write short description.
+    the rest API for the MagicBoard  
   version: "1.0"
 
 servers:
@@ -11,7 +11,7 @@ servers:
 
 tags:
   - name: Board
-    description: Related to boards.
+    description: Related to boards which includes the functions for creating and managing boards (UID's)
 
 paths:
   /v1/board/validate_uid:
