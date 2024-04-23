@@ -34,7 +34,7 @@ paths:
         '400':
           $ref: '#/components/responses/board_uid_missing'
 
-  /v1/board/czech_uid:
+  /v1/board/inpect_UID:
     get:
       tags:
         - Board
