@@ -34,11 +34,11 @@ paths:
         '400':
           $ref: '#/components/responses/board_uid_missing'
 
-  /v1/board/doExist:
+  /v1/board/exists:
     get:
       tags:
         - Board
-      summary: Checks whether a UID exists
+      summary: Checks whether a board exists by UID
       description: Takes a board UID and checks whether the board exists.
       operationId: checkUID
       parameters:
