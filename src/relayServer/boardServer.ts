@@ -1,28 +1,27 @@
-import { WebSocketServer, WebSocket, MessageEvent } from "ws";
+import { Server, Socket } from 'socket.io';
 
 namespace Backend.RelayServer {
-
   class BoardServer {
-    wss: WebSocketServer;
-    boardClients: WebSocket[] = [];
+    io: Server;
+    boardClients: Socket[] = [];
 
     constructor(port: number){
-      this.wss = new WebSocket.Server({ 'port': port });
+      this.io = new Server(port);
 
-      this.wss.on('connection', (ws: WebSocket) => {
+      this.io.on('connection', (socket) => {
+        socket.emit("Hello", "world");
+
         // Code to handle new WebSocket connections
-        this.boardClients.push(ws);
+        this.boardClients.push(socket);
 
-        ws.on('close', (close: CloseEvent) => {
-          console.log("Closed");
+        socket.on("cursorPositionUpdate", (arg) => {
+          console.log(arg);
+        });
+
+        socket.on('close', (close) => {
+          console.log(close);
         });
       });
-
-      this.wss.on('message', (message: MessageEvent) => {
-        // Code to handle incoming messages
-
-      });
-
     }
   }
 }
