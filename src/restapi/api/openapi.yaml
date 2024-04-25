@@ -1,0 +1,161 @@
+openapi: 3.0.3
+info:
+  description: 'the rest API for the MagicBoard  '
+  title: MagicBoard - Rest API
+  version: "1.0"
+servers:
+- url: http://64.227.121.226
+tags:
+- description: Related to boards which includes the functions for creating and managing
+    boards (UID's)
+  name: Board
+paths:
+  /v1/board/validate_uid:
+    get:
+      description: Takes a board UID and validates it.
+      operationId: validateUID
+      parameters:
+      - description: UID of a board.
+        explode: true
+        in: query
+        name: board_uid
+        required: true
+        schema:
+          $ref: '#/components/schemas/board_uid'
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                example: true
+                type: boolean
+          description: Whether Board UID is valid.
+        "400":
+          content:
+            text/html:
+              schema:
+                example: <p>board_uid parameter missing.</p>
+                type: string
+          description: Board UID was not supplied.
+      summary: Validates a board UID
+      tags:
+      - Board
+      x-eov-operation-handler: controllers/BoardController
+  /v1/board/exists:
+    get:
+      description: Takes a board UID and checks whether the board exists.
+      operationId: checkUID
+      parameters:
+      - description: UID of a board.
+        explode: true
+        in: query
+        name: board_uid
+        required: true
+        schema:
+          $ref: '#/components/schemas/board_uid'
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                example: true
+                type: boolean
+          description: "Whether the Board exists, based on Board UID."
+        "400":
+          content:
+            text/html:
+              schema:
+                example: <p>board_uid parameter missing.</p>
+                type: string
+          description: Board UID was not supplied.
+      summary: Checks whether a board exists by UID
+      tags:
+      - Board
+      x-eov-operation-handler: controllers/BoardController
+  /v1/board/create:
+    post:
+      operationId: createBoard
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/board_create_result'
+          description: Returns Board UID of successfully create board.
+      summary: Creates a new board
+      tags:
+      - Board
+      x-eov-operation-handler: controllers/BoardController
+  /v1/board/join:
+    get:
+      operationId: joinBoard
+      parameters:
+      - description: UID of a board.
+        explode: true
+        in: query
+        name: board_uid
+        required: true
+        schema:
+          $ref: '#/components/schemas/board_uid'
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/board_join_result'
+          description: Board joined??
+      summary: Get invite to websocket server
+      tags:
+      - Board
+      x-eov-operation-handler: controllers/BoardController
+components:
+  parameters:
+    board_uid:
+      description: UID of a board.
+      explode: true
+      in: query
+      name: board_uid
+      required: true
+      schema:
+        $ref: '#/components/schemas/board_uid'
+      style: form
+  responses:
+    board_uid_missing:
+      content:
+        text/html:
+          schema:
+            example: <p>board_uid parameter missing.</p>
+            type: string
+      description: Board UID was not supplied.
+  schemas:
+    board_uid:
+      example: AB4D3G
+      maxLength: 6
+      minLength: 6
+      type: string
+    board_create_result:
+      example:
+        board_uid: AB4D3G
+      properties:
+        board_uid:
+          example: AB4D3G
+          maxLength: 6
+          minLength: 6
+          type: string
+      type: object
+    board_join_result:
+      example:
+        port: 25565
+        host: 127.0.0.1
+      properties:
+        host:
+          example: 127.0.0.1
+          format: ip
+          type: string
+        port:
+          example: 25565
+          type: integer
+      type: object
