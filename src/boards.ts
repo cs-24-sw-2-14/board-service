@@ -48,12 +48,13 @@ export class Boards {
     return this.boards.find((board) => board.boardId === boardId);
   }
 
-  generateBoardID() {
-    let maxBoardId = "000000"
-    this.boards.forEach((board) => {
-      maxBoardId = board.boardId > maxBoardId ? board.boardId : maxBoardId
-    })
-    return maxBoardId;
+  generateBoardID() { 
+    let board: string; 
+
+    while(true) {
+      board = Math.ceil(Math.random()*15).toString().toUpperCase();
+      if (doesBoardExist(board)) return board
+    }
   }
 
   createBoard() {
