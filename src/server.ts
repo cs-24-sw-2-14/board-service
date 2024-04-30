@@ -1,28 +1,28 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { Board } from "./board";
+import express, { Express, Request, Response } from "express";
+import { Server } from "socket.io";
+import { Boards } from "./boards"
 
-/**
- * Contains boards.
- */
-export class Server {
-  BoardList: Board[] = [];
-  Port: number;
+const app: Express = express();
+const httpPort = 3000;
 
-  constructor(port: number) {
-    this.Port = port;
+const server = require('http').createServer(app);
+const socketio = new Server(server);
+const socketIoPort = 4000;
 
-    this.BoardList.push(new Board("A1B2C3"));
-  }
+let boards: Boards = new Boards(socketio)
 
-  StartServerAsync(){ 
-    const server = createServer((request: IncomingMessage, response: ServerResponse) => {
-      response.write(this.BoardList[0].UID);
-      response.end('Hello world!');
-    });
-     
-    server.listen(this.Port, () => {
-      console.log(`Server listening on port ${this.Port}`);
-    });    
-  }
-}
+app.post("/v1/board/create", (_, res: Response) => {
+  let boardId = JSON.stringify(boards.createBoard())
+  res.send(boardId);
+});
 
+app.get("/v1/board/join", (req: Request, res: Response) => {
+  let body = JSON.parse(req.body)
+  let boardIsValid = boards.doesBoardExist(body.boardID)
+  res.send(JSON.stringify({ 'doesExist': boardIsValid }));
+});
+
+socketio.listen(socketIoPort);
+app.listen(httpPort, () => {
+  console.log(`[server]: Server is running at http://localhost:${httpPort}`);
+});
