@@ -1,38 +1,83 @@
-import { Server } from "socket.io";
+import { Server, Namespace } from "socket.io";
+import { Drawing, DrawCommand, CoordinateType } from "./commands/draw"
+import { CommandController } from "./commandController"
 
-type User = {
-  id: number;
-  name: string;
-  isOnline: boolean;
-}
-
-enum CommandType { Add, Replace, Remove, Undo, Redo }
-
-type Command = {
-  owner: User;
-  command: string;
-  type: CommandType
+export class User {
+  username: string
+  constructor(username: string) {
+    this.username = username
+  }
 }
 
 export class Board {
   boardId: string;
-  namespace;
-  commandStack: Command[];
+  namespace: Namespace;
   users: User[];
+  currentId: number
+  controller: CommandController
   constructor(socketio: Server, boardID: string) {
     this.boardId = boardID;
-    this.commandStack = []
     this.users = []
+    this.currentId = 0
     this.namespace = socketio.of(this.boardId);
-    this.namespace.on("command", this.handleCommand)
-  }
-  handleCommand(command: string) {
-    this.commandStack.push(JSON.parse(command))
-    this.namespace.emit(command)
+    this.controller = new CommandController(this.namespace)
+    this.namespace.on("startDraw", this.handleStartDraw)
+    this.namespace.on("doDraw", this.handleDoDraw)
+    this.namespace.on("undo", this.handleUndo)
+    this.namespace.on("redo", this.handleRedo)
   }
 
-  createUser() {
-    return this.users.push() - 1
+  handleStartDraw(data: any) {
+    const drawing = new Drawing(data.placement, data.path, data.stroke, data.fill, data.strokeWidth)
+    const command = new DrawCommand(this.currentId++, drawing, data.username)
+    this.controller.execute(command)
+  }
+
+  handleDoDraw(data: any) {
+    const commandIndex = this.controller.undoStack.findIndex((command) => command.commandId === data.commandId)
+    if (!commandIndex) return
+    if ("drawing" in this.controller.undoStack[commandIndex])
+      (this.controller.undoStack[commandIndex] as DrawCommand).drawing.path.push({
+        x: data.x,
+        y: data.y,
+        type: CoordinateType.lineto
+      })
+    this.controller.undoStack[commandIndex].execute(this.namespace)
+  }
+
+  // handleStartMove(data: any) {
+  //   const command = new MoveCommand(this.currentId++, =, data.username)
+  //   this.controller.execute(command)
+  // }
+  //
+  // handleDoMove(data: any) {
+  //   const commandIndex = this.controller.undoStack.findIndex((command) => command.commandId === data.commandId)
+  //   if (!commandIndex) return
+  //   this.controller.undoStack[commandIndex].command.path.push({
+  //     x: data.x,
+  //     y: data.y,
+  //     type: CoordinateType.lineto
+  //   })
+  //   this.controller.undoStack[commandIndex].execute(this.namespace)
+  // }
+
+  handleUndo(data: any) {
+    if (!this.findUser(data.username)) return
+    this.controller.undo(data.username)
+  }
+
+  handleRedo(data: any) {
+    if (!this.findUser(data.username)) return
+    this.controller.redo(data.username)
+  }
+
+  createUser(username: string) {
+    if (this.findUser(username) === undefined) return
+    this.users.push(new User(username))
+  }
+
+  findUser(username: string) {
+    return this.users.find((user) => user.username === username)
   }
 }
 
