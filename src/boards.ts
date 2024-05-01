@@ -70,7 +70,7 @@ export class Board {
 
   createUser(username: string) {
     if (this.findUser(username) === undefined) return
-    this.users.push(new User(username))
+    this.users.push({ username: username })
   }
 
   findUser(username: string) {
