@@ -2,11 +2,8 @@ import { Server, Namespace } from "socket.io";
 import { Drawing, DrawCommand, CoordinateType } from "./commands/draw"
 import { CommandController } from "./commandController"
 
-export class User {
+export type User = {
   username: string
-  constructor(username: string) {
-    this.username = username
-  }
 }
 
 export class Board {
@@ -89,7 +86,7 @@ export class Boards {
     this.boards = []
   }
 
-  doesBoardExist(boardId: string) {
+  findBoard(boardId: string) {
     return this.boards.find((board) => board.boardId === boardId);
   }
 
