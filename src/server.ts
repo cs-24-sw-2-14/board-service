@@ -3,11 +3,11 @@ import { Server } from "socket.io";
 import { Boards } from "./boards"
 
 const app: Express = express();
-const httpPort = 3000;
+const httpPort = 5123;
 
 const server = require('http').createServer(app);
 const socketio = new Server(server);
-const socketIoPort = 4000;
+const socketIoPort = 6123;
 
 let boards: Boards = new Boards(socketio)
 
