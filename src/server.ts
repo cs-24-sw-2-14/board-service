@@ -12,14 +12,24 @@ const socketIoPort = 6123;
 let boards: Boards = new Boards(socketio)
 
 app.post("/v1/board/create", (_, res: Response) => {
-  let boardId = JSON.stringify(boards.createBoard())
+  const boardId = JSON.stringify(boards.createBoard())
   res.send(boardId);
 });
 
 app.get("/v1/board/join", (req: Request, res: Response) => {
-  let body = JSON.parse(req.body)
-  let boardIsValid = boards.doesBoardExist(body.boardID)
-  res.send(JSON.stringify({ 'doesExist': boardIsValid }));
+  const body = JSON.parse(req.body)
+  const board = boards.findBoard(body.boardID)
+  if (!board) {
+    res.status(404)
+    res.send()
+    return
+  }
+  const userExists = board.findUser(body.username)
+  if (!userExists) {
+    board.createUser(body.username)
+  }
+  res.status(200)
+  res.send()
 });
 
 socketio.listen(socketIoPort);
