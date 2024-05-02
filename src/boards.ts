@@ -91,13 +91,13 @@ export class Board {
     this.controller.redo(data.username);
   }
 
-  createUser(username: CreateUserInterface) {
-    if (this.findUser(username) === undefined) return;
-    this.users.push({ username: username });
+  createUser(data: CreateUserInterface) {
+    if (this.findUser(data.username) === undefined) return;
+    this.users.push({ username: data.username });
   }
 
-  findUser(username: FindUserInterface) {
-    return this.users.find((user) => user.username === username);
+  findUser(data: FindUserInterface) {
+    return this.users.find((user) => user.username === data.username);
   }
 }
 
