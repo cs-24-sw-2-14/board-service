@@ -6,7 +6,15 @@ import {
   Coordinate,
 } from "./commands/draw";
 import { CommandController } from "./commandController";
-import { StartDrawInterface, HandleDoDrawInterface } from "./interfaces.ts";
+
+import {
+  StartDrawInterface,
+  HandleDoDrawInterface,
+  HandleUndoInterface,
+  HandleRedoInterface,
+  CreateUserInterface,
+  FindUserInterface,
+} from "./interfaces.ts";
 
 export type User = {
   username: string;
@@ -66,30 +74,29 @@ export class Board {
   // handleDoMove(data: any) {
   //   const commandIndex = this.controller.undoStack.findIndex((command) => command.commandId === data.commandId)
   //   if (!commandIndex) return
-  //   this.controller.undoStack[commandIndex].command.path.push({
-  //     x: data.x,
+  //   this.controller.undoStack[commandIndex].command.path.push({ x: data.x,
   //     y: data.y,
   //     type: CoordinateType.lineto
   //   })
   //   this.controller.undoStack[commandIndex].execute(this.namespace)
   // }
 
-  handleUndo(data: string) {
+  handleUndo(data: HandleUndoInterface) {
     if (!this.findUser(data.username)) return;
     this.controller.undo(data.username);
   }
 
-  handleRedo(data: string) {
+  handleRedo(data: HandleRedoInterface) {
     if (!this.findUser(data.username)) return;
     this.controller.redo(data.username);
   }
 
-  createUser(username: string) {
+  createUser(username: CreateUserInterface) {
     if (this.findUser(username) === undefined) return;
     this.users.push({ username: username });
   }
 
-  findUser(username: string) {
+  findUser(username: FindUserInterface) {
     return this.users.find((user) => user.username === username);
   }
 }
