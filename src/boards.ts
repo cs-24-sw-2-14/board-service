@@ -18,10 +18,14 @@ export class Board {
     this.currentId = 0
     this.namespace = socketio.of(this.boardId);
     this.controller = new CommandController(this.namespace)
-    this.namespace.on("startDraw", this.handleStartDraw)
-    this.namespace.on("doDraw", this.handleDoDraw)
-    this.namespace.on("undo", this.handleUndo)
-    this.namespace.on("redo", this.handleRedo)
+    this.namespace.on("connection", (socket) => {
+      socket.on("startDraw", this.handleStartDraw.bind(this));
+      socket.on("doDraw", this.handleDoDraw.bind(this));
+      socket.on("startErase", this.handleStartErase.bind(this));
+      socket.on("doErase", this.handleDoErase.bind(this));
+      socket.on("undo", this.handleUndo.bind(this));
+      socket.on("redo", this.handleRedo.bind(this));
+    });
   }
 
   handleStartDraw(data: any) {
