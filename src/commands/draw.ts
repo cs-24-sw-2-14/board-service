@@ -57,6 +57,8 @@ export class Drawing {
     );
   }
 
+  // TODO: Implement the changing of the next coordinate to be a moveto type, if a coordinate is skipped
+  // BUG: If the first coordinate is skipped, the whole drawing dissapears (First coordinate must always be moveto type)
   stringifyPath() {
     let path = this.path.filter((drawCoord) => {
       // Check if the distance to any erase coordinate is greater than its threshold
