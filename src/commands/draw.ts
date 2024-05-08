@@ -16,38 +16,31 @@ export interface PathCoordinate extends Coordinate {
   type: CoordinateType;
 }
 
-export interface ErasePath {
-  path: Coordinate[];
-  commandId: number;
-  threshold: number;
+export class PathNode {
+  coordinate: Coordinate;
+  next: PathNode | null;
+  display: boolean;
+  constructor(coordinate: Coordinate) {
+    this.coordinate = coordinate;
+    this.display = true;
+    this.next = null;
+  }
 }
 
-export class Drawing {
-  placement: Coordinate;
-  path: PathCoordinate[];
-  stroke: string;
-  fill: string;
-  strokeWidth: number;
-  erasePaths: ErasePath[];
-  constructor(
-    placement: Coordinate,
-    path: Coordinate,
-    stroke: string,
-    fill: string,
-    strokeWidth: number,
-  ) {
-    this.placement = placement;
-    this.path = [
-      {
-        type: CoordinateType.moveto,
-        x: path.x,
-        y: path.y,
-      },
-    ];
-    this.strokeWidth = strokeWidth;
-    this.fill = fill;
-    this.stroke = stroke;
-    this.erasePaths = [];
+class DrawPath {
+  head: PathNode | null;
+  constructor() {
+    this.head = null;
+  }
+
+  add(pathCoordinate: PathCoordinate) {
+    let newNode = new PathNode(pathCoordinate);
+    if (this.head === null) {
+      this.head = newNode;
+    } else {
+      newNode.next = this.head;
+      this.head = newNode;
+    }
   }
 
   // Function to calculate distance between two coordinates
@@ -57,33 +50,82 @@ export class Drawing {
     );
   }
 
-  // TODO: Implement the changing of the next coordinate to be a moveto type, if a coordinate is skipped
-  // BUG: If the first coordinate is skipped, the whole drawing dissapears (First coordinate must always be moveto type)
-  stringifyPath() {
-    let path = this.path.filter((drawCoord) => {
-      // Check if the distance to any erase coordinate is greater than its threshold
-      return !this.erasePaths.some((erasePath) =>
-        erasePath.path.some(
-          (eraseCoord) =>
-            this.calculateDistance(eraseCoord, drawCoord) <=
-            erasePath.threshold,
-        ),
-      );
-    });
+  eraseFromCoordinate(coordinate: Coordinate, threshold: number): PathNode[] {
+    let erasedCoordinates = [];
+    let curr: PathNode | null = this.head;
+    while (curr?.next !== null) {
+      if (this.calculateDistance(coordinate, curr!.coordinate) <= threshold) {
+        curr!.display = false;
+        erasedCoordinates.push(curr!);
+      }
+      curr = curr!.next;
+    }
+    return erasedCoordinates;
+  }
 
-    return path
-      .map((coordinate) => {
-        if (coordinate.type === CoordinateType.moveto) {
-          return `M${coordinate.x},${coordinate.y}`;
+  stringify(): string {
+    if (this.head === null) return "";
+    let curr: PathNode | null = this.head;
+    let pathString = "";
+    while (curr?.next !== null) {
+      if (curr.display) {
+        if (curr.next.display) {
+          pathString =
+            `L${curr.coordinate.x},${curr.coordinate.y}` + pathString;
         } else {
-          return `L${coordinate.x},${coordinate.y}`;
+          pathString =
+            `M${curr.coordinate.x},${curr.coordinate.y}` + pathString;
         }
-      })
-      .join("");
+      }
+      curr = curr.next;
+    }
+    if (curr !== null && curr.display) {
+      pathString = `M${curr.coordinate.x},${curr.coordinate.y}` + pathString;
+    }
+    return pathString;
+  }
+}
+
+export interface ErasePath {
+  path: Coordinate[];
+  commandId: number;
+  threshold: number;
+}
+
+export class Drawing {
+  placement: Coordinate;
+  path: DrawPath;
+  stroke: string;
+  fill: string;
+  strokeWidth: number;
+  constructor(
+    placement: Coordinate,
+    initCoordinate: Coordinate,
+    stroke: string,
+    fill: string,
+    strokeWidth: number,
+  ) {
+    this.placement = placement;
+    this.path = new DrawPath();
+    this.path.add({
+      type: CoordinateType.moveto,
+      x: initCoordinate.x,
+      y: initCoordinate.y,
+    });
+    this.strokeWidth = strokeWidth;
+    this.fill = fill;
+    this.stroke = stroke;
+  }
+
+  // Function to calculate distance between two coordinates
+  calculateDistance(coord1: Coordinate, coord2: Coordinate): number {
+    return Math.sqrt(
+      Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
+    );
   }
 
   stringify() {
-    return `<path stroke='${this.stroke}' fill='${this.fill}' stroke-width='${this.strokeWidth}' d='${this.stringifyPath()}' />`;
+    return `<path stroke='${this.stroke}' fill='${this.fill}' stroke-width='${this.strokeWidth}' d='${this.path.stringify()}' />`;
   }
 }
 
