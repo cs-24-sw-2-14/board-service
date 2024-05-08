@@ -1,19 +1,23 @@
 import express, { Express, Request, Response } from "express";
-import { createServer } from "http";
+import { createServer } from "node:http";
 var cors = require("cors");
 import { Server } from "socket.io";
 import { Boards } from "./boards";
 
-const app: Express = express();
-app.use(express.json());
-app.use(cors());
-const httpPort = 5123;
+// const app: Express = express();
+const port = 5123;
 
-const socketIoPort = 6123;
-const httpServer = createServer(app);
-const socketio = new Server(httpServer, {
+var corsOptions = {
+  origin: "*",
+};
+
+const app = express();
+app.use(express.json());
+app.use(cors(corsOptions));
+const server = createServer(app);
+const socketio = new Server(server, {
   cors: {
-    origin: ["http://magicboard.fagerlund.io:80", "http://localhost:5173"],
+    origin: "*",
   },
 });
 
@@ -52,7 +56,6 @@ app.post("/v1/board/validate", (req: Request, res: Response) => {
   return;
 });
 
-socketio.listen(socketIoPort);
-app.listen(httpPort, () => {
+server.listen(port, () => {
   console.log(`[server]: Server is running`);
 });
