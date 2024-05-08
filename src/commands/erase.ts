@@ -1,61 +1,61 @@
 import { Namespace } from "socket.io";
 import { CommandInterface } from "../commandController";
-import { Coordinate, CoordinateType, DrawCommand } from "./draw";
+import { type PathNode, DrawCommand, Coordinate } from "./draw";
 
 export class EraseCommand implements CommandInterface {
   commandId: number;
-  drawCommands: DrawCommand[];
+  erasedCoordinates: PathNode[];
+  drawCommands: Map<number, DrawCommand>;
   owner: string;
   threshold: number;
-  erasePath: Coordinate[];
-  constructor(
-    commandId: number,
-    owner: string,
-    drawCommands: DrawCommand[],
-    threshold: number,
-    erasePath: Coordinate[],
-  ) {
+  constructor(commandId: number, owner: string, threshold: number) {
     this.commandId = commandId;
-    this.drawCommands = drawCommands;
+    this.erasedCoordinates = [];
+    this.drawCommands = new Map();
     this.owner = owner;
     this.threshold = threshold;
-    this.erasePath = erasePath;
   }
-  execute(socket: Namespace) {
-    console.log(this.drawCommands);
-    this.drawCommands.forEach((drawCommand) => {
-      // console.log(drawCommand);
-      const index = drawCommand.drawing.erasePaths.findIndex((erasePath) => {
-        return erasePath.commandId === this.commandId;
-      });
-      // if the erasePath does not exist, create it
-      if (index === -1) {
-        drawCommand.drawing.erasePaths.push({
-          commandId: this.commandId,
-          threshold: this.threshold,
-          path: this.erasePath,
-        });
-        // if the erasePath exists, modify it
-      } else {
-        drawCommand.drawing.erasePaths[index] = {
-          commandId: this.commandId,
-          threshold: this.threshold,
-          path: this.erasePath,
-        };
+
+  eraseFromDrawCommands(
+    drawCommands: DrawCommand[],
+    coordinate: Coordinate,
+    threshold: number,
+  ) {
+    console.log("erase from drawCommands");
+    drawCommands.forEach((drawCommand) => {
+      console.log("erase from drawCommand:" + drawCommand.commandId);
+      if (!this.drawCommands.has(drawCommand.commandId)) {
+        this.drawCommands.set(drawCommand.commandId, drawCommand);
       }
-      drawCommand.execute(socket);
-      socket.emit("edit", {
-        svg: drawCommand.drawing.stringify(),
-        commandId: drawCommand.commandId,
-      });
+      let erasedCoordinates = drawCommand.drawing.path.eraseFromCoordinate(
+        coordinate,
+        threshold,
+      );
+      if (erasedCoordinates.length !== 0) {
+        this.erasedCoordinates = this.erasedCoordinates.concat(
+          this.erasedCoordinates,
+          erasedCoordinates,
+        );
+      }
     });
   }
-  undo(socket: Namespace) {
+
+  execute(socket: Namespace) {
+    console.log("execute");
+    this.erasedCoordinates.forEach((erasedCoordinate) => {
+      erasedCoordinate.display = false;
+    });
     this.drawCommands.forEach((drawCommand) => {
-      const index = drawCommand.drawing.erasePaths.findIndex((erasePath) => {
-        return erasePath.commandId === this.commandId;
-      });
-      drawCommand.drawing.erasePaths.splice(index, 1);
+      drawCommand.execute(socket);
+    });
+  }
+
+  undo(socket: Namespace) {
+    console.log("undo");
+    this.erasedCoordinates.forEach((erasedCoordinate) => {
+      erasedCoordinate.display = true;
+    });
+    this.drawCommands.forEach((drawCommand) => {
       drawCommand.execute(socket);
     });
   }
