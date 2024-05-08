@@ -39,7 +39,7 @@ export class Board {
       data.strokeWidth,
     );
     const command = new DrawCommand(this.currentId++, drawing, data.username);
-    this.controller.execute(command);
+    this.controller.execute(command, data.username);
     this.namespace.emit("startDrawSuccess", {
       commandId: command.commandId,
       username: data.username,
@@ -51,7 +51,7 @@ export class Board {
       (command) => command.commandId === data.commandId,
     ) as DrawCommand;
     if (!drawCommand) return;
-    drawCommand.drawing.path.push({
+    drawCommand.drawing.path.add({
       x: data.x,
       y: data.y,
       type: CoordinateType.lineto,
@@ -59,7 +59,6 @@ export class Board {
     drawCommand.execute(this.namespace);
   }
 
-  // BUG: Sometimes an invalid drawCommand is added to the list of drawCommands
   handleStartErase(data: any) {
     const drawCommands = this.controller.undoStack.filter(
       (command): command is DrawCommand =>
@@ -70,43 +69,46 @@ export class Board {
     const command = new EraseCommand(
       this.currentId++,
       data.username,
-      drawCommands,
       data.threshold,
-      [
-        {
-          x: data.coordinate.x,
-          y: data.coordinate.y,
-        },
-      ],
     );
 
-    this.controller.execute(command);
+    command.eraseFromDrawCommands(
+      drawCommands,
+      data.coordinate,
+      data.threshold,
+    );
+
+    this.controller.execute(command, data.username);
     this.namespace.emit("startEraseSuccess", {
       commandId: command.commandId,
       username: data.username,
     });
   }
 
-  // BUG: Sometimes an invalid drawCommand is added to the list of drawCommands
   handleDoErase(data: any) {
+    console.log("doErase");
     const eraseCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
     ) as EraseCommand;
+    console.log("DE0");
+
     if (!eraseCommand) return; // No valid erase command found, exit
 
-    // Filter out draw commands that are already erased
-    const newDrawCommands = data.commandIds.filter((commandId: number) => {
-      return !eraseCommand.drawCommands.some(
-        (drawCommand) => drawCommand.commandId === commandId,
-      );
-    });
+    const drawCommands = this.controller.undoStack.filter(
+      (command): command is DrawCommand =>
+        data.commandIds.includes(command.commandId),
+    );
+    if (drawCommands.length === 0) return; // No valid draw commands found, exit
 
-    eraseCommand.drawCommands =
-      eraseCommand.drawCommands.concat(newDrawCommands);
-
-    eraseCommand.erasePath.push({ x: data.coordinate.x, y: data.coordinate.y });
+    console.log("DE1");
+    eraseCommand.eraseFromDrawCommands(
+      drawCommands,
+      data.coordinate,
+      data.threshold,
+    );
 
     eraseCommand.execute(this.namespace);
+    console.log("DE2");
   }
 
   // TODO: Implement Move Functionality
@@ -144,14 +146,15 @@ export class Boards {
   }
 
   generateBoardID() {
-    // while (true) {
-    //   let boardId = Array.from({ length: 6 }, () => {
-    //     return Math.ceil(Math.random() * 15).toString(16).toUpperCase();
-    //   }).join("");
-    //
-    //   if (!this.findBoard(boardId)) return boardId;
-    // }
-    return "123456";
+    while (true) {
+      let boardId = Array.from({ length: 6 }, () => {
+        return Math.ceil(Math.random() * 15)
+          .toString(16)
+          .toUpperCase();
+      }).join("");
+
+      if (!this.findBoard(boardId)) return boardId;
+    }
   }
 
   createBoard() {
