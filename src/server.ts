@@ -1,28 +1,58 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { Board } from "./board";
+import express, { Express, Request, Response } from "express";
+import { createServer } from "http";
+var cors = require("cors");
+import { Server } from "socket.io";
+import { Boards } from "./boards";
 
-/**
- * Contains boards.
- */
-export class Server {
-  BoardList: Board[] = [];
-  Port: number;
+const app: Express = express();
+app.use(express.json());
+app.use(cors());
+const httpPort = 5123;
 
-  constructor(port: number) {
-    this.Port = port;
+const socketIoPort = 6123;
+const httpServer = createServer(app);
+const socketio = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173",
+  },
+});
 
-    this.BoardList.push(new Board("A1B2C3"));
+let boards: Boards = new Boards(socketio);
+
+app.post("/v1/board/create", (_, res: Response) => {
+  res.send({ boardId: boards.createBoard() });
+  return;
+});
+
+app.post("/v1/board/join", (req: Request, res: Response) => {
+  const body = req.body;
+  const board = boards.findBoard(body.boardId);
+  if (!board) {
+    res.status(404).send("Board does not exist");
+    return;
   }
-
-  StartServerAsync(){ 
-    const server = createServer((request: IncomingMessage, response: ServerResponse) => {
-      response.write(this.BoardList[0].UID);
-      response.end('Hello world!');
-    });
-     
-    server.listen(this.Port, () => {
-      console.log(`Server listening on port ${this.Port}`);
-    });    
+  const userExists = board.findUser(body.username);
+  if (!userExists) {
+    board.createUser(body.username);
+    res.send("Board is valid and username was added to board");
+    return;
   }
-}
+  res.send("Board and username is valid");
+  return;
+});
 
+app.post("/v1/board/validate", (req: Request, res: Response) => {
+  const body = req.body;
+  const board = boards.findBoard(body.boardId);
+  if (!board) {
+    res.status(404).send("Board does not exist");
+    return;
+  }
+  res.status(200).send("Board is valid");
+  return;
+});
+
+socketio.listen(socketIoPort);
+app.listen(httpPort, () => {
+  console.log(`[server]: Server is running at http://localhost:${httpPort}`);
+});

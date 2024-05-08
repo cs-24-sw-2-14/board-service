@@ -1,25 +1,24 @@
 {
   "name": "magicboard-backend",
   "version": "1.0.0",
-  "description": "Backend for the Magicboard project",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "ts-node ./src/index.ts",
-    "dev": "ts-node-dev --respawn ./src/index.ts",
-    "codegen-restapi": "java -jar openapi-generator-cli.jar generate -g nodejs-express-server -i API/rest-api.yaml -o src/rest_api"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@types/ws": "^8.5.10",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.4.3"
-  },
   "dependencies": {
-    "ws": "^8.16.0"
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "lodash": "^4.17.21",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
   }
 }
