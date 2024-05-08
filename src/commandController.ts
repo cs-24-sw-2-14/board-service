@@ -22,9 +22,12 @@ export class CommandController {
     this.redoStack = [];
     this.namespace = namespace;
   }
-  execute(command: DrawCommand | MoveCommand | EraseCommand) {
+  execute(command: DrawCommand | MoveCommand | EraseCommand, username: string) {
     command.execute(this.namespace);
-    this.redoStack = [];
+    this.redoStack = this.redoStack.filter((command) => {
+      if (command.owner === username) return false;
+      return true;
+    });
     this.undoStack.push(command);
   }
   undo(username: string) {
