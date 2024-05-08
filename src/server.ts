@@ -12,9 +12,9 @@ const httpPort = 5123;
 const socketIoPort = 6123;
 const httpServer = createServer(app);
 const socketio = new Server(httpServer, {
-  cors: {
-    origin: "http://localhost:5173",
-  },
+  // cors: {
+  //   origin: "http://localhost:5173",
+  // },
 });
 
 let boards: Boards = new Boards(socketio);
@@ -54,5 +54,5 @@ app.post("/v1/board/validate", (req: Request, res: Response) => {
 
 socketio.listen(socketIoPort);
 app.listen(httpPort, () => {
-  console.log(`[server]: Server is running at http://localhost:${httpPort}`);
+  console.log(`[server]: Server is running`);
 });
