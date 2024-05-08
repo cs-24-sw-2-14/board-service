@@ -12,9 +12,9 @@ const httpPort = 5123;
 const socketIoPort = 6123;
 const httpServer = createServer(app);
 const socketio = new Server(httpServer, {
-  // cors: {
-  //   origin: "http://localhost:5173",
-  // },
+  cors: {
+    origin: ["http://magicboard.fagerlund.io:80", "http://localhost:5173"],
+  },
 });
 
 let boards: Boards = new Boards(socketio);
