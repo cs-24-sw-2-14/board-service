@@ -1,3 +1,5 @@
+import { Coordinate } from "./types";
+
 export interface StartDrawInterface {
   placement: Coordinate;
   path: Coordinate;

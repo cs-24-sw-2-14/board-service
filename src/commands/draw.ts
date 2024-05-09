@@ -1,18 +1,13 @@
 import { Namespace } from "socket.io";
 import { CommandInterface } from "../commandController";
+import { Coordinate } from "../types";
 
 export enum CoordinateType {
   moveto,
   lineto,
 }
 
-// TODO: Move shared types to shared types file
-export interface Coordinate {
-  x: number;
-  y: number;
-}
-
-export interface PathCoordinate extends Coordinate {
+interface PathCoordinate extends Coordinate {
   type: CoordinateType;
 }
 
@@ -27,7 +22,14 @@ export class PathNode {
   }
 }
 
-class DrawPath {
+// Function to calculate distance between two coordinates
+export function calculateDistance(coord1: Coordinate, coord2: Coordinate): number {
+  return Math.sqrt(
+    Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
+  );
+}
+
+export class DrawPath {
   head: PathNode | null;
   constructor() {
     this.head = null;
@@ -43,18 +45,11 @@ class DrawPath {
     }
   }
 
-  // Function to calculate distance between two coordinates
-  calculateDistance(coord1: Coordinate, coord2: Coordinate): number {
-    return Math.sqrt(
-      Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
-    );
-  }
-
   eraseFromCoordinate(coordinate: Coordinate, threshold: number): PathNode[] {
     let erasedCoordinates = [];
     let curr: PathNode | null = this.head;
     while (curr?.next !== null) {
-      if (this.calculateDistance(coordinate, curr!.coordinate) <= threshold) {
+      if (calculateDistance(coordinate, curr!.coordinate) <= threshold) {
         curr!.display = false;
         erasedCoordinates.push(curr!);
       }
@@ -115,13 +110,6 @@ export class Drawing {
     this.strokeWidth = strokeWidth;
     this.fill = fill;
     this.stroke = stroke;
-  }
-
-  // Function to calculate distance between two coordinates
-  calculateDistance(coord1: Coordinate, coord2: Coordinate): number {
-    return Math.sqrt(
-      Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
-    );
   }
 
   stringify() {
