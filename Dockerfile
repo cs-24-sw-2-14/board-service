@@ -8,6 +8,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 5123 6123
+EXPOSE 5123
 
 CMD ["npx", "ts-node", "src/server.ts"]
