@@ -1,11 +1,6 @@
-import { Namespace } from "socket.io"
-import { CommandInterface } from "../commandController"
-
-// TODO: Move shared types to shared types file
-export interface Coordinate {
-  x: number;
-  y: number;
-}
+import { Namespace } from "socket.io";
+import { CommandInterface } from "../commandController";
+import { Coordinate } from "../types";
 
 export class MoveCommand implements CommandInterface {
   commandId: number

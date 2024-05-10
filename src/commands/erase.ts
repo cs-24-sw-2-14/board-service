@@ -1,6 +1,7 @@
 import { Namespace } from "socket.io";
 import { CommandInterface } from "../commandController";
-import { type PathNode, DrawCommand, Coordinate } from "./draw";
+import { type PathNode, DrawCommand } from "./draw";
+import { Coordinate } from "../types";
 
 export class EraseCommand implements CommandInterface {
   commandId: number;

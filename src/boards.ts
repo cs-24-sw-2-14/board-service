@@ -1,11 +1,8 @@
 import { Server, Namespace } from "socket.io";
-import { Drawing, DrawCommand, CoordinateType } from "./commands/draw";
+import { Drawing, DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
 import { CommandController } from "./commandController";
-
-export type User = {
-  username: string;
-};
+import { User, CoordinateType } from "./types";
 
 export class Board {
   boardId: string;

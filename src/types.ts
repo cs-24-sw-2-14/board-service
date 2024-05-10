@@ -26,3 +26,28 @@ export interface CreateUserInterface {
 export interface FindUserInterface {
   username: string;
 }
+
+export type User = {
+  username: string;
+};
+
+export enum CoordinateType {
+  moveto,
+  lineto,
+}
+
+// TODO: Move shared types to shared types file
+export interface Coordinate {
+  x: number;
+  y: number;
+}
+
+export interface PathCoordinate extends Coordinate {
+  type: CoordinateType;
+}
+
+export interface ErasePath {
+  path: Coordinate[];
+  commandId: number;
+  threshold: number;
+}
