@@ -1,6 +1,7 @@
 import { Server, Namespace } from "socket.io";
 import { Drawing, DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
+import { MoveCommand } from "./commands/move";
 import { CommandController } from "./commandController";
 import { User, CoordinateType } from "./types";
 
@@ -21,6 +22,8 @@ export class Board {
       socket.on("doDraw", this.handleDoDraw.bind(this));
       socket.on("startErase", this.handleStartErase.bind(this));
       socket.on("doErase", this.handleDoErase.bind(this));
+      socket.on("startMove", this.handleStartMove.bind(this));
+      socket.on("doMove", this.handleDoMove.bind(this));
       socket.on("undo", this.handleUndo.bind(this));
       socket.on("redo", this.handleRedo.bind(this));
     });
@@ -108,8 +111,36 @@ export class Board {
     console.log("DE2");
   }
 
-  // TODO: Implement Move Functionality
+  handleStartMove(data: any) {
+    console.log("startmove");
+    const drawCommand = this.controller.undoStack.find(
+      (command) => command.commandId === data.commandId,
+    ) as DrawCommand;
+    if (!drawCommand) return;
+    const command = new MoveCommand(
+      this.currentId++,
+      data.username,
+      data.deltaCoordinate,
+      drawCommand.drawing.placement,
+      data.commandId,
+    );
+    this.controller.execute(command, data.username);
+    console.log("startmove");
+    this.namespace.emit("startMoveSuccess", {
+      commandId: command.commandId,
+      username: data.username,
+    });
+  }
 
+  handleDoMove(data: any) {
+    console.log("domove");
+    const moveCommand = this.controller.undoStack.find(
+      (command) => command.commandId === data.commandId,
+    ) as MoveCommand;
+    if (!moveCommand) return;
+    moveCommand.deltaCoordinate = data.deltaCoordinate;
+    moveCommand.execute(this.namespace);
+  }
   handleUndo(data: any) {
     // if (!this.findUser(data.username)) return
     this.controller.undo(data.username);
