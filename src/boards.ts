@@ -86,11 +86,9 @@ export class Board {
   }
 
   handleDoErase(data: any) {
-    console.log("doErase");
     const eraseCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
     ) as EraseCommand;
-    console.log("DE0");
 
     if (!eraseCommand) return; // No valid erase command found, exit
 
@@ -100,7 +98,6 @@ export class Board {
     );
     if (drawCommands.length === 0) return; // No valid draw commands found, exit
 
-    console.log("DE1");
     eraseCommand.eraseFromDrawCommands(
       drawCommands,
       data.coordinate,
@@ -108,11 +105,9 @@ export class Board {
     );
 
     eraseCommand.execute(this.namespace);
-    console.log("DE2");
   }
 
   handleStartMove(data: any) {
-    console.log("startmove");
     const drawCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
     ) as DrawCommand;
@@ -125,7 +120,6 @@ export class Board {
       data.commandId,
     );
     this.controller.execute(command, data.username);
-    console.log("startmove");
     this.namespace.emit("startMoveSuccess", {
       commandId: command.commandId,
       username: data.username,
@@ -133,7 +127,6 @@ export class Board {
   }
 
   handleDoMove(data: any) {
-    console.log("domove");
     const moveCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
     ) as MoveCommand;

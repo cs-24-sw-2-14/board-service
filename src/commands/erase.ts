@@ -22,9 +22,7 @@ export class EraseCommand implements CommandInterface {
     coordinate: Coordinate,
     threshold: number,
   ) {
-    console.log("erase from drawCommands");
     drawCommands.forEach((drawCommand) => {
-      console.log("erase from drawCommand:" + drawCommand.commandId);
       if (!this.drawCommands.has(drawCommand.commandId)) {
         this.drawCommands.set(drawCommand.commandId, drawCommand);
       }
@@ -42,7 +40,6 @@ export class EraseCommand implements CommandInterface {
   }
 
   execute(socket: Namespace) {
-    console.log("execute");
     this.erasedCoordinates.forEach((erasedCoordinate) => {
       erasedCoordinate.display = false;
     });
@@ -52,7 +49,6 @@ export class EraseCommand implements CommandInterface {
   }
 
   undo(socket: Namespace) {
-    console.log("undo");
     this.erasedCoordinates.forEach((erasedCoordinate) => {
       erasedCoordinate.display = true;
     });

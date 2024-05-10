@@ -1,10 +1,9 @@
-import express, { Express, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { createServer } from "node:http";
 var cors = require("cors");
 import { Server } from "socket.io";
 import { Boards } from "./boards";
 
-// const app: Express = express();
 const port = 5123;
 
 var corsOptions = {
