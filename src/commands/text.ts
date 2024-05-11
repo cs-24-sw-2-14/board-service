@@ -27,9 +27,8 @@ export class TextCommand implements CommandInterface {
   }
   execute(socket: Namespace) {
     socket.emit('edit', {
-      svg: this.text.stringify(),
-      x: this.text.placement.x,
-      y: this.text.placement.y,
+      svgString: this.text.stringify(),
+      placement: this.text.placement,
       commandId: this.commandId,
     })
   };
