@@ -1,6 +1,7 @@
 import { Server, Namespace } from "socket.io";
 import { Drawing, DrawCommand, CoordinateType } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
+import { Text, TextCommand } from './commands/text';
 import { CommandController } from "./commandController";
 
 export type User = {
@@ -24,6 +25,8 @@ export class Board {
       socket.on("doDraw", this.handleDoDraw.bind(this));
       socket.on("startErase", this.handleStartErase.bind(this));
       socket.on("doErase", this.handleDoErase.bind(this));
+      socket.on("startText", this.handleStartText.bind(this));
+      socket.on("doText", this.handleDoText.bind(this));
       socket.on("undo", this.handleUndo.bind(this));
       socket.on("redo", this.handleRedo.bind(this));
     });
@@ -109,6 +112,28 @@ export class Board {
 
     eraseCommand.execute(this.namespace);
     console.log("DE2");
+  }
+
+  handleStartText(data: any) {
+    const text = new Text(
+      data.placement,
+      "",
+    );
+    const command = new TextCommand(this.currentId++, text, data.username);
+    this.controller.execute(command, data.username);
+    this.namespace.emit("startTextSuccess", {
+      commandId: command.commandId,
+      username: data.username,
+    });
+  }
+
+  handleDoText(data: any) {
+    const textCommand = this.controller.undoStack.find(
+      (command) => command.commandId === data.commandId,
+    ) as TextCommand;
+    if (!textCommand) return;
+    textCommand.text.content = data.content;
+    textCommand.execute(this.namespace);
   }
 
   // TODO: Implement Move Functionality
