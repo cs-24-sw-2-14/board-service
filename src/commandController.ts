@@ -2,6 +2,7 @@ import { Namespace } from "socket.io";
 import { DrawCommand } from "./commands/draw";
 import { MoveCommand } from "./commands/move";
 import { EraseCommand } from "./commands/erase";
+import { TextCommand } from "./commands/text";
 
 export interface CommandInterface {
   commandId: number;
@@ -14,15 +15,15 @@ export interface CommandInterface {
 // TODO: Implement type for a command, so we dont have to write DrawCommand | MoveCommand | EraseCommand
 
 export class CommandController {
-  undoStack: (DrawCommand | MoveCommand | EraseCommand)[];
-  redoStack: (DrawCommand | MoveCommand | EraseCommand)[];
+  undoStack: (DrawCommand | MoveCommand | EraseCommand | TextCommand)[];
+  redoStack: (DrawCommand | MoveCommand | EraseCommand | TextCommand)[];
   namespace: Namespace;
   constructor(namespace: Namespace) {
     this.undoStack = [];
     this.redoStack = [];
     this.namespace = namespace;
   }
-  execute(command: DrawCommand | MoveCommand | EraseCommand, username: string) {
+  execute(command: DrawCommand | MoveCommand | EraseCommand | TextCommand, username: string) {
     command.execute(this.namespace);
     this.redoStack = this.redoStack.filter((command) => {
       if (command.owner === username) return false;
@@ -33,7 +34,7 @@ export class CommandController {
   undo(username: string) {
     if (this.undoStack.length === 0) return;
     const commandIndex = this.undoStack.findLastIndex(
-      (command: DrawCommand | MoveCommand | EraseCommand) =>
+      (command: DrawCommand | MoveCommand | EraseCommand | TextCommand) =>
         command.owner === username,
     );
     if (commandIndex === -1) return;
@@ -45,7 +46,7 @@ export class CommandController {
   redo(username: string) {
     if (this.redoStack.length === 0) return;
     const commandIndex = this.redoStack.findLastIndex(
-      (command: DrawCommand | MoveCommand | EraseCommand) =>
+      (command: DrawCommand | MoveCommand | EraseCommand | TextCommand) =>
         command.owner === username,
     );
     if (commandIndex === -1) return;
