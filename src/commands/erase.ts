@@ -34,36 +34,37 @@ export class EraseCommand implements Command {
   ) {
     this.commandId = commandId;
     this.erasedCoordinates = [];
-    this.drawCommands = new Map();
+    this.stack = stack;
+    this.erasedCommandIds = [];
     this.owner = owner;
     this.threshold = threshold;
+    this.display = true;
   }
 
-  eraseFromDrawCommands(
-    drawCommands: DrawCommand[],
-    coordinate: Coordinate,
-    threshold: number,
-  ) {
-    drawCommands.forEach((drawCommand) => {
-      if (!this.drawCommands.has(drawCommand.commandId)) {
-        this.drawCommands.set(drawCommand.commandId, drawCommand);
   /**
    * 'Erases' a coordinate from a list of commandIds (by setting their display attribute to false)
    * @param commandIds - array of commandIds to be erased from
    * @param coordinate - coordinate to erase from commands
    */
+  eraseFromDrawCommands(commandIds: CommandId[], coordinate: CanvasCoordinate) {
+    let erasedCoordinates: PathNode[] = [];
+    commandIds.forEach((commandId) => {
+      if (!this.stack.has(commandId)) return;
+      if (!this.erasedCommandIds.includes(commandId)) {
+        this.erasedCommandIds.push(commandId);
       }
-      let erasedCoordinates = drawCommand.drawing.path.eraseFromCoordinate(
+      let command = this.stack.get(commandId)! as DrawCommand;
+      erasedCoordinates = command.path.eraseFromCoordinate(
         coordinate,
-        threshold,
+        this.threshold,
       );
-      if (erasedCoordinates.length !== 0) {
-        this.erasedCoordinates = this.erasedCoordinates.concat(
-          this.erasedCoordinates,
-          erasedCoordinates,
-        );
-      }
     });
+    if (erasedCoordinates.length !== 0) {
+      this.erasedCoordinates = this.erasedCoordinates.concat(
+        this.erasedCoordinates,
+        erasedCoordinates,
+      );
+    }
   }
 
   execute(socket: Namespace) {

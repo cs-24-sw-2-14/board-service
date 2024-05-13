@@ -10,10 +10,10 @@ import { MoveCommand } from "./commands/move";
  * @param namespace - namespace instance of socketio, used to send events
  */
 export class CommandController {
+  stack: Map<CommandId, DrawCommand | EraseCommand | MoveCommand>;
   namespace: Namespace;
   constructor(namespace: Namespace) {
-    this.undoStack = [];
-    this.redoStack = [];
+    this.stack = new Map();
     this.namespace = namespace;
   }
 
@@ -22,28 +22,32 @@ export class CommandController {
    * @param command - Command to be executed
    * @param username - user which executes the command
    */
+  execute(
+    command: DrawCommand | EraseCommand | MoveCommand,
+    username: Username,
+  ) {
+    for (const command of this.stack) {
+      if (command[1].owner !== username || command[1].display) continue;
+      this.stack.delete(command[0]);
+    }
     command.execute(this.namespace);
-    this.redoStack = this.redoStack.filter((command) => {
-      if (command.owner === username) return false;
-      return true;
-    });
-    this.undoStack.push(command);
+    this.stack.set(command.commandId, command);
   }
-  undo(username: string) {
-    if (this.undoStack.length === 0) return;
-    const commandIndex = this.undoStack.findLastIndex(
-      (command: DrawCommand | MoveCommand | EraseCommand) =>
-        command.owner === username,
-    );
-    if (commandIndex === -1) return;
-    const command = this.undoStack.splice(commandIndex, 1)[0];
-    command.undo(this.namespace);
-    this.redoStack.push(command);
 
   /**
    * Undoes the latest command executed by the given user
    * @param username - user which undoes
    */
+  undo(username: Username) {
+    if (this.stack.size === 0) return;
+    let latestCommand: Command | null = null;
+    for (const command of this.stack) {
+      if (command[1].owner !== username) continue;
+      latestCommand = command[1];
+    }
+    if (latestCommand === null) return;
+    latestCommand.display = false;
+    latestCommand.undo(this.namespace);
   }
 
   /**
@@ -51,22 +55,12 @@ export class CommandController {
    * @param username - user which redoes
    */
   redo(username: string) {
-    if (this.redoStack.length === 0) return;
-    const commandIndex = this.redoStack.findLastIndex(
-      (command: DrawCommand | MoveCommand | EraseCommand) =>
-        command.owner === username,
-    );
-    if (commandIndex === -1) return;
-    const command = this.redoStack.splice(commandIndex, 1)[0];
-    command.redo(this.namespace);
-    let spliceIndex = 0;
-    // Find the index to insert the command into the undo stack
-    for (let i = this.undoStack.length - 1; i >= 0; i--) {
-      if (this.undoStack[i].commandId < command.commandId) {
-        spliceIndex = i + 1;
-        break;
-      }
+    if (this.stack.size === 0) return;
+    for (const command of this.stack) {
+      if (command[1].owner !== username || !command[1].execute) continue;
+      command[1].display = true;
+      command[1].redo(this.namespace);
+      break;
     }
-    this.undoStack.splice(spliceIndex, 0, command);
   }
 }
