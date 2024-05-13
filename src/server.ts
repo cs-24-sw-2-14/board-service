@@ -29,23 +29,6 @@ app.post("/v1/board/create", (_, res: Response) => {
   return;
 });
 
-app.post("/v1/board/join", (req: Request, res: Response) => {
-  const body = req.body;
-  const board = boards.findBoard(body.boardId);
-  if (!board) {
-    res.status(404).send("Board does not exist");
-    return;
-  }
-  const userExists = board.findUser(body.username);
-  if (!userExists) {
-    board.createUser(body.username);
-    res.send("Board is valid and username was added to board");
-    return;
-  }
-  res.send("Board and username is valid");
-  return;
-});
-
 /**
  * Checks if a boardId already exists
  * @returns 404: if board does not exist
