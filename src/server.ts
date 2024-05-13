@@ -53,8 +53,7 @@ app.post("/v1/board/join", (req: Request, res: Response) => {
  */
 app.post("/v1/board/validate", (req: Request, res: Response) => {
   const body = req.body;
-  const board = boards.findBoard(body.boardId);
-  if (!board) {
+  if (!boards.boards.has(body.boardId)) {
     res.status(404).send("Board does not exist");
     return;
   }
