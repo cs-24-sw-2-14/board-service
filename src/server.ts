@@ -3,8 +3,7 @@ import { createServer } from "node:http";
 var cors = require("cors");
 import { Server } from "socket.io";
 import { Boards } from "./boards";
-
-const port = 5123;
+const PORT = 5123;
 
 var corsOptions = {
   origin: "*",
@@ -19,7 +18,6 @@ const socketio = new Server(server, {
     origin: "*",
   },
 });
-
 let boards: Boards = new Boards(socketio);
 
 /**
@@ -64,6 +62,6 @@ app.post("/v1/board/validate", (req: Request, res: Response) => {
   return;
 });
 
-server.listen(port, () => {
+server.listen(PORT, () => {
   console.log(`[server]: Server is running`);
 });
