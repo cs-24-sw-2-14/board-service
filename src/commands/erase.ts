@@ -1,15 +1,27 @@
 import { Namespace } from "socket.io";
-import { CommandInterface } from "../commandController";
 import { type PathNode, DrawCommand } from "./draw";
-import { Coordinate } from "../types";
+import {
+  Command,
+  CommandId,
+  CanvasCoordinate,
+  Threshold,
+  Username,
+} from "../types";
 
-export class EraseCommand implements CommandInterface {
-  commandId: number;
+export class EraseCommand implements Command {
+  commandId: CommandId;
   erasedCoordinates: PathNode[];
-  drawCommands: Map<number, DrawCommand>;
-  owner: string;
-  threshold: number;
-  constructor(commandId: number, owner: string, threshold: number) {
+  stack: Map<CommandId, Command>;
+  erasedCommandIds: CommandId[];
+  owner: Username;
+  threshold: Threshold;
+  display: Boolean;
+  constructor(
+    commandId: CommandId,
+    owner: Username,
+    threshold: Threshold,
+    stack: Map<CommandId, Command>,
+  ) {
     this.commandId = commandId;
     this.erasedCoordinates = [];
     this.drawCommands = new Map();

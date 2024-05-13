@@ -1,28 +1,16 @@
 import { Namespace } from "socket.io";
+import { Command, CommandId, Username } from "./types";
 import { DrawCommand } from "./commands/draw";
-import { MoveCommand } from "./commands/move";
 import { EraseCommand } from "./commands/erase";
-
-export interface CommandInterface {
-  commandId: number;
-  owner: string;
-  execute: (socket: Namespace) => void;
-  undo: (socket: Namespace) => void;
-  redo: (socket: Namespace) => void;
-}
-
-// TODO: Implement type for a command, so we dont have to write DrawCommand | MoveCommand | EraseCommand
+import { MoveCommand } from "./commands/move";
 
 export class CommandController {
-  undoStack: (DrawCommand | MoveCommand | EraseCommand)[];
-  redoStack: (DrawCommand | MoveCommand | EraseCommand)[];
   namespace: Namespace;
   constructor(namespace: Namespace) {
     this.undoStack = [];
     this.redoStack = [];
     this.namespace = namespace;
   }
-  execute(command: DrawCommand | MoveCommand | EraseCommand, username: string) {
     command.execute(this.namespace);
     this.redoStack = this.redoStack.filter((command) => {
       if (command.owner === username) return false;

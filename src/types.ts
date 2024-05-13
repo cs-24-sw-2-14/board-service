@@ -1,15 +1,29 @@
-export interface StartDrawInterface {
-  placement: Coordinate;
-  path: Coordinate;
-  stroke: string;
-  fill: string;
-  strokeWidth: number;
+import { Namespace } from "socket.io";
+export interface User {
+  name: Username;
+  color?: Color;
+  position?: CanvasCoordinate;
 }
-
-export interface HandleDoDrawInterface {
-  commandId: string;
-  x: number;
-  y: number;
+export type CommandId = number;
+export type ColorName = string;
+export type HexColorString = string;
+export type FillString = string;
+export type StrokeWidth = number;
+export type Threshold = number;
+export type SvgString = string;
+export type BoardId = string;
+export type Username = string;
+export enum Color {
+  red,
+  orange,
+  yellow,
+  lime,
+  green,
+  teal,
+  brown,
+  blue,
+  purple,
+  pink,
 }
 
 export interface HandleUndoInterface {
@@ -27,27 +41,22 @@ export interface FindUserInterface {
   username: string;
 }
 
-export type User = {
-  username: string;
-};
-
-export enum CoordinateType {
-  moveto,
-  lineto,
-}
-
-// TODO: Move shared types to shared types file
-export interface Coordinate {
+export type Coordinate = {
   x: number;
   y: number;
+};
+
+export type CanvasCoordinate = Coordinate;
+
+export interface Command {
+  commandId: CommandId;
+  owner: Username;
+  display: Boolean;
+  execute: (socket: Namespace) => void;
+  undo: (socket: Namespace) => void;
+  redo: (socket: Namespace) => void;
 }
 
-export interface PathCoordinate extends Coordinate {
-  type: CoordinateType;
-}
-
-export interface ErasePath {
-  path: Coordinate[];
-  commandId: number;
-  threshold: number;
+export interface PhysicalCommand extends Command {
+  placement: CanvasCoordinate;
 }

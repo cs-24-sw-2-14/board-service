@@ -1,21 +1,22 @@
 import { Server, Namespace } from "socket.io";
-import { Drawing, DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
 import { MoveCommand } from "./commands/move";
+import { User, BoardId, CommandId, Username } from "./types";
 import { CommandController } from "./commandController";
-import { User, CoordinateType } from "./types";
 
 export class Board {
   boardId: string;
   namespace: Namespace;
   users: User[];
   currentId: number;
+  boardId: BoardId;
+  currentCommandId: CommandId;
   controller: CommandController;
   constructor(socketio: Server, boardID: string) {
     this.boardId = boardID;
     this.users = [];
-    this.currentId = 0;
     this.namespace = socketio.of("/" + this.boardId);
+    this.currentCommandId = 0;
     this.controller = new CommandController(this.namespace);
     this.namespace.on("connection", (socket) => {
       socket.on("startDraw", this.handleStartDraw.bind(this));
@@ -27,18 +28,17 @@ export class Board {
       socket.on("undo", this.handleUndo.bind(this));
       socket.on("redo", this.handleRedo.bind(this));
     });
-    console.log("New board created with id: " + this.boardId);
   }
 
-  handleStartDraw(data: any) {
-    const drawing = new Drawing(
-      data.placement,
-      data.path,
+  handleStartDraw(data: StartDraw, callback: StartAck) {
+    const command = new DrawCommand(
+      this.currentCommandId++,
+      data.username,
+      data.coordinate,
       data.stroke,
       data.fill,
       data.strokeWidth,
     );
-    const command = new DrawCommand(this.currentId++, drawing, data.username);
     this.controller.execute(command, data.username);
     this.namespace.emit("startDrawSuccess", {
       commandId: command.commandId,
@@ -72,11 +72,7 @@ export class Board {
       data.threshold,
     );
 
-    command.eraseFromDrawCommands(
-      drawCommands,
-      data.coordinate,
-      data.threshold,
-    );
+    command.eraseFromDrawCommands(data.commandIdsUnderCursor, data.coordinate);
 
     this.controller.execute(command, data.username);
     this.namespace.emit("startEraseSuccess", {
@@ -113,11 +109,10 @@ export class Board {
     ) as DrawCommand;
     if (!drawCommand) return;
     const command = new MoveCommand(
-      this.currentId++,
+      this.currentCommandId++,
       data.username,
-      data.deltaCoordinate,
-      drawCommand.drawing.placement,
-      data.commandId,
+      data.offset,
+      this.controller.stack.get(data.movedCommandId) as DrawCommand,
     );
     this.controller.execute(command, data.username);
     this.namespace.emit("startMoveSuccess", {

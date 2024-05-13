@@ -1,25 +1,26 @@
 import { Namespace } from "socket.io";
-import { CommandInterface } from "../commandController";
-import { Coordinate } from "../types";
+import { Command, CommandId, Username, CanvasCoordinate } from "../types";
+import { DrawCommand } from "./draw";
 
-export class MoveCommand implements CommandInterface {
-  commandId: number;
-  owner: string;
-  deltaCoordinate: Coordinate;
-  originalCoordinate: Coordinate;
-  movedCommandId: number;
+export class MoveCommand implements Command {
+  commandId: CommandId;
+  owner: Username;
+  movedOffset: CanvasCoordinate;
+  oldCoordinate: CanvasCoordinate;
+  movedCommand: DrawCommand;
+  display: Boolean;
   constructor(
-    commandId: number,
-    owner: string,
-    deltaCoordinate: Coordinate,
-    originalCoordinate: Coordinate,
-    movedCommandId: number,
+    commandId: CommandId,
+    owner: Username,
+    movedOffset: CanvasCoordinate,
+    movedCommand: DrawCommand,
   ) {
     this.commandId = commandId;
     this.owner = owner;
-    this.deltaCoordinate = deltaCoordinate;
-    this.originalCoordinate = originalCoordinate;
-    this.movedCommandId = movedCommandId;
+    this.movedOffset = movedOffset ?? { x: 0, y: 0 };
+    this.oldCoordinate = movedCommand.offset;
+    this.movedCommand = movedCommand;
+    this.display = true;
   }
   execute(socket: Namespace) {
     socket.emit("edit", {

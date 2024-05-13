@@ -1,12 +1,21 @@
 import { Namespace } from "socket.io";
-import { CommandInterface } from "../commandController";
-import { PathCoordinate, Coordinate, CoordinateType } from "../types";
+import {
+  Command,
+  CanvasCoordinate,
+  CommandId,
+  HexColorString,
+  FillString,
+  StrokeWidth,
+  Threshold,
+  SvgString,
+  Username,
+} from "../types";
 
 export class PathNode {
-  coordinate: Coordinate;
+  coordinate: CanvasCoordinate;
   next: PathNode | null;
   display: boolean;
-  constructor(coordinate: Coordinate) {
+  constructor(coordinate: CanvasCoordinate) {
     this.coordinate = coordinate;
     this.display = true;
     this.next = null;
@@ -19,8 +28,8 @@ class DrawPath {
     this.head = null;
   }
 
-  add(pathCoordinate: PathCoordinate) {
-    let newNode = new PathNode(pathCoordinate);
+  add(coordinate: CanvasCoordinate) {
+    let newNode = new PathNode(coordinate);
     if (this.head === null) {
       this.head = newNode;
     } else {
@@ -36,7 +45,10 @@ class DrawPath {
     );
   }
 
-  eraseFromCoordinate(coordinate: Coordinate, threshold: number): PathNode[] {
+  eraseFromCoordinate(
+    coordinate: CanvasCoordinate,
+    threshold: Threshold,
+  ): PathNode[] {
     let erasedCoordinates = [];
     let curr: PathNode | null = this.head;
     while (curr?.next !== null) {
@@ -49,7 +61,7 @@ class DrawPath {
     return erasedCoordinates;
   }
 
-  stringify(): string {
+  stringify(): SvgString {
     if (this.head === null) return "";
     let curr: PathNode | null = this.head;
     let pathString = "";
@@ -72,26 +84,21 @@ class DrawPath {
   }
 }
 
-export class Drawing {
-  placement: Coordinate;
+class Drawing {
   path: DrawPath;
-  stroke: string;
-  fill: string;
-  strokeWidth: number;
+  stroke: HexColorString;
+  fill: FillString;
+  strokeWidth: StrokeWidth;
   constructor(
     placement: Coordinate,
-    initCoordinate: Coordinate,
-    stroke: string,
-    fill: string,
-    strokeWidth: number,
+    initCoordinate: CanvasCoordinate,
+    stroke: HexColorString,
+    fill: FillString,
+    strokeWidth: StrokeWidth,
   ) {
     this.placement = placement;
     this.path = new DrawPath();
-    this.path.add({
-      type: CoordinateType.moveto,
-      x: initCoordinate.x,
-      y: initCoordinate.y,
-    });
+    this.path.add(initCoordinate);
     this.strokeWidth = strokeWidth;
     this.fill = fill;
     this.stroke = stroke;
@@ -109,20 +116,25 @@ export class Drawing {
   }
 }
 
-export class DrawCommand implements CommandInterface {
-  commandId: number;
-  drawing: Drawing;
-  owner: string;
-  constructor(commandId: number, drawing: Drawing, owner: string) {
+export class DrawCommand extends Drawing implements Command {
+  commandId: CommandId;
+  owner: Username;
+  display: Boolean;
+  constructor(
+    commandId: CommandId,
+    owner: Username,
+    initCoordinate: CanvasCoordinate,
+    stroke: HexColorString,
+    fill: FillString,
+    strokeWidth: StrokeWidth,
     this.commandId = commandId;
-    this.drawing = drawing;
     this.owner = owner;
+    this.display = true;
   }
   execute(socket: Namespace) {
     socket.emit("edit", {
-      svg: this.drawing.stringify(),
-      x: this.drawing.placement.x,
-      y: this.drawing.placement.y,
+      svgString: this.stringify(),
+      placement: this.offset,
       commandId: this.commandId,
     });
   }
