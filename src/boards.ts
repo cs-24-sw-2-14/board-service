@@ -30,15 +30,15 @@ import { CommandController } from "./commandController";
  * @param controller - The command controller, controlling the undo, redo and execution of commands
  */
 export class Board {
-  users: User[];
   boardId: BoardId;
   namespace: Namespace<ClientToServerEvents, ServerToClientEvents, SocketData>;
+  users: Map<Username, User>;
   currentCommandId: CommandId;
   controller: CommandController;
   constructor(socketio: Server, boardID: string) {
     this.boardId = boardID;
-    this.users = [];
     this.namespace = socketio.of("/" + this.boardId);
+    this.users = new Map();
     this.currentCommandId = 0;
     this.controller = new CommandController(this.namespace);
     this.namespace.on("connection", (socket) => {
@@ -75,28 +75,18 @@ export class Board {
     });
   }
 
-    const drawCommand = this.controller.undoStack.find(
-      (command) => command.commandId === data.commandId,
   /**
    * Edits a DrawCommand, and executes it, to send changes to clients
    * @param data, of interface DoDraw
    */
   handleDoDraw(data: DoDraw) {
+    const drawCommand = this.controller.stack.get(
+      data.commandId,
     ) as DrawCommand;
     if (!drawCommand) return;
-    drawCommand.drawing.path.add({
-      x: data.x,
-      y: data.y,
-      type: CoordinateType.lineto,
-    });
+    drawCommand.path.add(data.coordinate);
     drawCommand.execute(this.namespace);
   }
-
-    const drawCommands = this.controller.undoStack.filter(
-      (command): command is DrawCommand =>
-        data.commandIds.includes(command.commandId),
-    );
-    if (drawCommands.length === 0) return; // No valid draw commands found, exit
 
   /**
    * Creates a EraseCommand and executes it
@@ -183,15 +173,6 @@ export class Board {
    */
   handleRedo(data: Redo) {
     this.controller.redo(data.username);
-  }
-
-  createUser(username: string) {
-    if (this.findUser(username) === undefined) return;
-    this.users.push({ username: username });
-  }
-
-  findUser(username: string) {
-    return this.users.find((user) => user.username === username);
   }
 }
 
