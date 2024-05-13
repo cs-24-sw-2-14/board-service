@@ -41,6 +41,20 @@ export class Board {
     this.users = new Map();
     this.currentCommandId = 0;
     this.controller = new CommandController(this.namespace);
+
+    // Register middleware to perform 'authentication' on every incoming connection.
+    this.namespace.use((socket, next) => {
+      const username = socket.handshake.auth.username;
+      if (this.users.has(username)) {
+        next(new Error("Username Already Taken"));
+      } else {
+        this.users.set(username, { name: username });
+        socket.data.username = username;
+        next();
+      }
+    });
+
+    // If connection is successful, bind functions to events
     this.namespace.on("connection", (socket) => {
       socket.on("startDraw", this.handleStartDraw.bind(this));
       socket.on("doDraw", this.handleDoDraw.bind(this));
@@ -50,6 +64,10 @@ export class Board {
       socket.on("doMove", this.handleDoMove.bind(this));
       socket.on("undo", this.handleUndo.bind(this));
       socket.on("redo", this.handleRedo.bind(this));
+      socket.on("disconnect", () => {
+        // remove the user from the hashmap when they disconnect
+        this.users.delete(socket.data.username);
+      });
     });
   }
 
