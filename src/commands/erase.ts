@@ -68,29 +68,28 @@ export class EraseCommand implements Command {
   }
 
   execute(socket: Namespace) {
-    this.erasedCoordinates.forEach((erasedCoordinate) => {
-      erasedCoordinate.display = false;
-    });
-    this.drawCommands.forEach((drawCommand) => {
-      drawCommand.execute(socket);
-    });
+    this.update(socket, false);
   }
 
   undo(socket: Namespace) {
-    this.erasedCoordinates.forEach((erasedCoordinate) => {
-      erasedCoordinate.display = true;
-    });
-    this.drawCommands.forEach((drawCommand) => {
-      drawCommand.execute(socket);
-    });
+    this.update(socket, true);
   }
   redo(socket: Namespace) {
     this.execute(socket);
   }
+
   /**
    * Updates the display attribute of all the pathnodes and executes the
    * execute function on all affected drawCommands, to send changes to clients
    * @param socket - socketio namespace instance, used to be able to send events
    * @param state - the new display state
    */
+  update(socket: Namespace, state: boolean) {
+    this.erasedCoordinates.forEach((erasedCoordinate) => {
+      erasedCoordinate.display = state;
+    });
+    this.erasedCommandIds.forEach((drawCommandId) => {
+      this.stack.get(drawCommandId)?.execute(socket);
+    });
+  }
 }
