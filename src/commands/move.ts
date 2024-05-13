@@ -2,6 +2,15 @@ import { Namespace } from "socket.io";
 import { Command, CommandId, Username, CanvasCoordinate } from "../types";
 import { DrawCommand } from "./draw";
 
+/**
+ * Represents an MoveCommand, which moves a commands placement
+ * @attribute commandId - the commandId identifying the command
+ * @attribute owner - owner of the command
+ * @attribute movedOffset - the offset to move the moved command
+ * @attribute oldCoordinate - the old placement of the moved command
+ * @attribute movedCommandId - the commandId of the moved command
+ * @attribute display -  threshold
+ */
 export class MoveCommand implements Command {
   commandId: CommandId;
   owner: Username;

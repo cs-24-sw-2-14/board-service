@@ -8,6 +8,16 @@ import {
   Username,
 } from "../types";
 
+/**
+ * Represents an EraseCommand, which erases coordinates from a drawing
+ * @attribute commandId - the commandId identifying the command
+ * @attribute erasedCoordinates - array of references to the PathNodes, which are erased
+ * @attribute stack - reference to the stack hashmap, allowing access to commands from their commandIds
+ * @attribute erasedCommandIds - array of CommandIds, which are erased
+ * @attribute owner - owner of the command
+ * @attribute threshold - erase threshold
+ * @attribute display -  threshold
+ */
 export class EraseCommand implements Command {
   commandId: CommandId;
   erasedCoordinates: PathNode[];
@@ -37,6 +47,11 @@ export class EraseCommand implements Command {
     drawCommands.forEach((drawCommand) => {
       if (!this.drawCommands.has(drawCommand.commandId)) {
         this.drawCommands.set(drawCommand.commandId, drawCommand);
+  /**
+   * 'Erases' a coordinate from a list of commandIds (by setting their display attribute to false)
+   * @param commandIds - array of commandIds to be erased from
+   * @param coordinate - coordinate to erase from commands
+   */
       }
       let erasedCoordinates = drawCommand.drawing.path.eraseFromCoordinate(
         coordinate,
@@ -71,4 +86,10 @@ export class EraseCommand implements Command {
   redo(socket: Namespace) {
     this.execute(socket);
   }
+  /**
+   * Updates the display attribute of all the pathnodes and executes the
+   * execute function on all affected drawCommands, to send changes to clients
+   * @param socket - socketio namespace instance, used to be able to send events
+   * @param state - the new display state
+   */
 }

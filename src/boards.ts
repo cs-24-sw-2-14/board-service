@@ -4,6 +4,16 @@ import { MoveCommand } from "./commands/move";
 import { User, BoardId, CommandId, Username } from "./types";
 import { CommandController } from "./commandController";
 
+/**
+ * Represents a Board, keeping track of its users and commands.
+ * Listens to connection events for the namespace, and the different board events
+ * Updates the clients with the 'edit' and 'remove' socketio events
+ * @param boardId - The unique id identifying the board
+ * @param namespace - socketio instance of the namespace, which here is the boardId
+ * @param users - Hashmap of the users on the board
+ * @param currentCommandId - The latest commandId which was used,
+ * @param controller - The command controller, controlling the undo, redo and execution of commands
+ */
 export class Board {
   boardId: string;
   namespace: Namespace;
@@ -30,6 +40,12 @@ export class Board {
     });
   }
 
+  /**
+   * Creates a DrawCommand and executes it
+   * Sends acknowledgement back to client via supplied callback function, containing the new commandId
+   * @param data, of interface StartDraw
+   * @param callback, of interface StartAck
+   */
   handleStartDraw(data: StartDraw, callback: StartAck) {
     const command = new DrawCommand(
       this.currentCommandId++,
@@ -49,6 +65,10 @@ export class Board {
   handleDoDraw(data: any) {
     const drawCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
+  /**
+   * Edits a DrawCommand, and executes it, to send changes to clients
+   * @param data, of interface DoDraw
+   */
     ) as DrawCommand;
     if (!drawCommand) return;
     drawCommand.drawing.path.add({
@@ -66,6 +86,12 @@ export class Board {
     );
     if (drawCommands.length === 0) return; // No valid draw commands found, exit
 
+  /**
+   * Creates a EraseCommand and executes it
+   * Sends acknowledgement back to client via supplied callback function, containing the new commandId
+   * @param data, of interface StartErase
+   * @param callback, of interface StartAck
+   */
     const command = new EraseCommand(
       this.currentId++,
       data.username,
@@ -84,6 +110,10 @@ export class Board {
   handleDoErase(data: any) {
     const eraseCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
+  /**
+   * Edits a EraseCommand, and executes it, to send changes to clients
+   * @param data, of interface DoErase
+   */
     ) as EraseCommand;
 
     if (!eraseCommand) return; // No valid erase command found, exit
@@ -108,6 +138,12 @@ export class Board {
       (command) => command.commandId === data.commandId,
     ) as DrawCommand;
     if (!drawCommand) return;
+  /**
+   * Creates a MoveCommand and executes it
+   * Sends acknowledgement back to client via supplied callback function, containing the new commandId
+   * @param data, of interface StartMove
+   * @param callback, of interface StartAck
+   */
     const command = new MoveCommand(
       this.currentCommandId++,
       data.username,
@@ -127,15 +163,27 @@ export class Board {
     ) as MoveCommand;
     if (!moveCommand) return;
     moveCommand.deltaCoordinate = data.deltaCoordinate;
+  /**
+   * Edits a MoveCommand, and executes it, to send changes to clients
+   * @param data, of interface DoMove
+   */
     moveCommand.execute(this.namespace);
   }
   handleUndo(data: any) {
     // if (!this.findUser(data.username)) return
+  /**
+   * Executes the undo action for the given user
+   * @param data, of interface Undo
+   */
     this.controller.undo(data.username);
   }
 
   handleRedo(data: any) {
     // if (!this.findUser(data.username)) return
+  /**
+   * Executes the redo action for the given user
+   * @param data, of interface Redo
+   */
     this.controller.redo(data.username);
   }
 
@@ -149,6 +197,12 @@ export class Board {
   }
 }
 
+/**
+ * Represents multiple boards
+ * Is responsible for the creation of new boards
+ * @param boards - Hashmap which maps a BoardId to a Board
+ * @param socketio - socketio server instance, which is passed to the boards
+ */
 export class Boards {
   boards: Board[];
   socketio: Server;
@@ -161,6 +215,10 @@ export class Boards {
     return this.boards.find((board) => board.boardId === boardId);
   }
 
+  /**
+   * Generates a random and unique BoardId
+   * @returns Random and unique hexadecimal string of length 6
+   */
   generateBoardID() {
     while (true) {
       let boardId = Array.from({ length: 6 }, () => {
@@ -173,6 +231,10 @@ export class Boards {
     }
   }
 
+  /**
+   * Creates a new board and adds it to the hashmap of boards
+   * @returns the new added boardId
+   */
   createBoard() {
     let boardId = this.generateBoardID();
     this.boards.push(new Board(this.socketio, boardId));
