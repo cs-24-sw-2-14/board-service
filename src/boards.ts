@@ -1,4 +1,5 @@
 import { Server, Namespace } from "socket.io";
+import { DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
 import { MoveCommand } from "./commands/move";
 import { User, BoardId, CommandId, Username } from "./types";
@@ -29,10 +30,7 @@ import { CommandController } from "./commandController";
  * @param controller - The command controller, controlling the undo, redo and execution of commands
  */
 export class Board {
-  boardId: string;
-  namespace: Namespace;
   users: User[];
-  currentId: number;
   boardId: BoardId;
   namespace: Namespace<ClientToServerEvents, ServerToClientEvents, SocketData>;
   currentCommandId: CommandId;
@@ -108,9 +106,10 @@ export class Board {
    */
   handleStartErase(data: StartErase, callback: StartAck) {
     const command = new EraseCommand(
-      this.currentId++,
+      this.currentCommandId++,
       data.username,
       data.threshold,
+      this.controller.stack,
     );
 
     command.eraseFromDrawCommands(data.commandIdsUnderCursor, data.coordinate);
@@ -122,36 +121,21 @@ export class Board {
     });
   }
 
-    const eraseCommand = this.controller.undoStack.find(
-      (command) => command.commandId === data.commandId,
   /**
    * Edits a EraseCommand, and executes it, to send changes to clients
    * @param data, of interface DoErase
    */
   handleDoErase(data: DoErase) {
+    const eraseCommand = this.controller.stack.get(
+      data.commandId,
     ) as EraseCommand;
-
-    if (!eraseCommand) return; // No valid erase command found, exit
-
-    const drawCommands = this.controller.undoStack.filter(
-      (command): command is DrawCommand =>
-        data.commandIds.includes(command.commandId),
-    );
-    if (drawCommands.length === 0) return; // No valid draw commands found, exit
-
     eraseCommand.eraseFromDrawCommands(
-      drawCommands,
+      data.commandIdsUnderCursor,
       data.coordinate,
-      data.threshold,
     );
-
     eraseCommand.execute(this.namespace);
   }
 
-    const drawCommand = this.controller.undoStack.find(
-      (command) => command.commandId === data.commandId,
-    ) as DrawCommand;
-    if (!drawCommand) return;
   /**
    * Creates a MoveCommand and executes it
    * Sends acknowledgement back to client via supplied callback function, containing the new commandId
@@ -172,20 +156,19 @@ export class Board {
     });
   }
 
-    const moveCommand = this.controller.undoStack.find(
-      (command) => command.commandId === data.commandId,
-    ) as MoveCommand;
-    if (!moveCommand) return;
-    moveCommand.deltaCoordinate = data.deltaCoordinate;
   /**
    * Edits a MoveCommand, and executes it, to send changes to clients
    * @param data, of interface DoMove
    */
   handleDoMove(data: DoMove) {
+    if (!this.controller.stack.get(data.commandId)) return;
+    const moveCommand = this.controller.stack.get(
+      data.commandId,
+    )! as MoveCommand;
+    moveCommand.movedOffset = data.offset;
     moveCommand.execute(this.namespace);
   }
-  handleUndo(data: any) {
-    // if (!this.findUser(data.username)) return
+
   /**
    * Executes the undo action for the given user
    * @param data, of interface Undo
