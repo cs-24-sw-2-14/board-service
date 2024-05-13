@@ -10,6 +10,7 @@ import {
   SvgString,
   Username,
 } from "../types";
+import { calculateDistance } from "../utils";
 
 /**
  * Represents a Node in the linked list representing a svg Path
@@ -51,13 +52,6 @@ class DrawPath {
       newNode.next = this.head;
       this.head = newNode;
     }
-  }
-
-  // Function to calculate distance between two coordinates
-  calculateDistance(coord1: Coordinate, coord2: Coordinate): number {
-    return Math.sqrt(
-      Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
-    );
   }
 
   /**
@@ -138,13 +132,6 @@ class Drawing {
     this.strokeWidth = strokeWidth;
     this.fill = fill;
     this.stroke = stroke;
-  }
-
-  // Function to calculate distance between two coordinates
-  calculateDistance(coord1: Coordinate, coord2: Coordinate): number {
-    return Math.sqrt(
-      Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
-    );
   }
 
   /**
