@@ -2,6 +2,20 @@ import { Server, Namespace } from "socket.io";
 import { EraseCommand } from "./commands/erase";
 import { MoveCommand } from "./commands/move";
 import { User, BoardId, CommandId, Username } from "./types";
+import {
+  StartAck,
+  StartDraw,
+  DoDraw,
+  StartErase,
+  DoErase,
+  StartMove,
+  DoMove,
+  ClientToServerEvents,
+  ServerToClientEvents,
+  SocketData,
+  Redo,
+  Undo,
+} from "./socketioInterfaces";
 import { CommandController } from "./commandController";
 
 /**
@@ -20,6 +34,7 @@ export class Board {
   users: User[];
   currentId: number;
   boardId: BoardId;
+  namespace: Namespace<ClientToServerEvents, ServerToClientEvents, SocketData>;
   currentCommandId: CommandId;
   controller: CommandController;
   constructor(socketio: Server, boardID: string) {
@@ -62,13 +77,13 @@ export class Board {
     });
   }
 
-  handleDoDraw(data: any) {
     const drawCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
   /**
    * Edits a DrawCommand, and executes it, to send changes to clients
    * @param data, of interface DoDraw
    */
+  handleDoDraw(data: DoDraw) {
     ) as DrawCommand;
     if (!drawCommand) return;
     drawCommand.drawing.path.add({
@@ -79,7 +94,6 @@ export class Board {
     drawCommand.execute(this.namespace);
   }
 
-  handleStartErase(data: any) {
     const drawCommands = this.controller.undoStack.filter(
       (command): command is DrawCommand =>
         data.commandIds.includes(command.commandId),
@@ -92,6 +106,7 @@ export class Board {
    * @param data, of interface StartErase
    * @param callback, of interface StartAck
    */
+  handleStartErase(data: StartErase, callback: StartAck) {
     const command = new EraseCommand(
       this.currentId++,
       data.username,
@@ -107,13 +122,13 @@ export class Board {
     });
   }
 
-  handleDoErase(data: any) {
     const eraseCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
   /**
    * Edits a EraseCommand, and executes it, to send changes to clients
    * @param data, of interface DoErase
    */
+  handleDoErase(data: DoErase) {
     ) as EraseCommand;
 
     if (!eraseCommand) return; // No valid erase command found, exit
@@ -133,7 +148,6 @@ export class Board {
     eraseCommand.execute(this.namespace);
   }
 
-  handleStartMove(data: any) {
     const drawCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
     ) as DrawCommand;
@@ -144,6 +158,7 @@ export class Board {
    * @param data, of interface StartMove
    * @param callback, of interface StartAck
    */
+  handleStartMove(data: StartMove, callback: StartAck) {
     const command = new MoveCommand(
       this.currentCommandId++,
       data.username,
@@ -157,7 +172,6 @@ export class Board {
     });
   }
 
-  handleDoMove(data: any) {
     const moveCommand = this.controller.undoStack.find(
       (command) => command.commandId === data.commandId,
     ) as MoveCommand;
@@ -167,6 +181,7 @@ export class Board {
    * Edits a MoveCommand, and executes it, to send changes to clients
    * @param data, of interface DoMove
    */
+  handleDoMove(data: DoMove) {
     moveCommand.execute(this.namespace);
   }
   handleUndo(data: any) {
@@ -175,15 +190,15 @@ export class Board {
    * Executes the undo action for the given user
    * @param data, of interface Undo
    */
+  handleUndo(data: Undo) {
     this.controller.undo(data.username);
   }
 
-  handleRedo(data: any) {
-    // if (!this.findUser(data.username)) return
   /**
    * Executes the redo action for the given user
    * @param data, of interface Redo
    */
+  handleRedo(data: Redo) {
     this.controller.redo(data.username);
   }
 
