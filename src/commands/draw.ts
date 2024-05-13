@@ -167,6 +167,8 @@ export class DrawCommand extends Drawing implements Command {
     stroke: HexColorString,
     fill: FillString,
     strokeWidth: StrokeWidth,
+  ) {
+    super(initCoordinate, stroke, fill, strokeWidth);
     this.commandId = commandId;
     this.owner = owner;
     this.offset = { x: 0, y: 0 };
