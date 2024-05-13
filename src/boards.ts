@@ -183,15 +183,11 @@ export class Board {
  * @param socketio - socketio server instance, which is passed to the boards
  */
 export class Boards {
-  boards: Board[];
+  boards: Map<BoardId, Board>;
   socketio: Server;
   constructor(socketio: Server) {
     this.socketio = socketio;
-    this.boards = [];
-  }
-
-  findBoard(boardId: string) {
-    return this.boards.find((board) => board.boardId === boardId);
+    this.boards = new Map();
   }
 
   /**
@@ -206,7 +202,7 @@ export class Boards {
           .toUpperCase();
       }).join("");
 
-      if (!this.findBoard(boardId)) return boardId;
+      if (!this.boards.has(boardId)) return boardId;
     }
   }
 
@@ -216,7 +212,7 @@ export class Boards {
    */
   createBoard() {
     let boardId = this.generateBoardID();
-    this.boards.push(new Board(this.socketio, boardId));
+    this.boards.set(boardId, new Board(this.socketio, boardId));
     return boardId;
   }
 }
