@@ -32,18 +32,15 @@ export class MoveCommand implements Command {
     this.display = true;
   }
   execute(socket: Namespace) {
-    socket.emit("edit", {
-      x: this.originalCoordinate.x + this.deltaCoordinate.x,
-      y: this.originalCoordinate.y + this.deltaCoordinate.y,
-      commandId: this.movedCommandId,
-    });
+    this.movedCommand.offset = {
+      x: this.oldCoordinate.x + this.movedOffset.x,
+      y: this.oldCoordinate.y + this.movedOffset.y,
+    };
+    this.movedCommand.execute(socket);
   }
   undo(socket: Namespace) {
-    socket.emit("edit", {
-      x: this.originalCoordinate.x,
-      y: this.originalCoordinate.y,
-      commandId: this.movedCommandId,
-    });
+    this.movedCommand.offset = this.oldCoordinate;
+    this.movedCommand.execute(socket);
   }
   redo(socket: Namespace) {
     this.execute(socket);
