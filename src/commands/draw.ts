@@ -145,7 +145,7 @@ class Drawing {
 }
 
 /**
- * Represents a DrawCommand
+ * Represents a draw instruction
  * @param commandId - The commandId of the DrawCommand
  * @param owner - The user which created the command, therefore 'owning' it
  * @param initCoordinate - The first coordinate at which the drawing starts
