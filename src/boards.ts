@@ -69,10 +69,7 @@ export class Board {
       data.strokeWidth,
     );
     this.controller.execute(command, data.username);
-    this.namespace.emit("startDrawSuccess", {
-      commandId: command.commandId,
-      username: data.username,
-    });
+    callback(command.commandId);
   }
 
   /**
@@ -105,10 +102,7 @@ export class Board {
     command.eraseFromDrawCommands(data.commandIdsUnderCursor, data.coordinate);
 
     this.controller.execute(command, data.username);
-    this.namespace.emit("startEraseSuccess", {
-      commandId: command.commandId,
-      username: data.username,
-    });
+    callback(command.commandId);
   }
 
   /**
@@ -140,10 +134,7 @@ export class Board {
       this.controller.stack.get(data.movedCommandId) as DrawCommand,
     );
     this.controller.execute(command, data.username);
-    this.namespace.emit("startMoveSuccess", {
-      commandId: command.commandId,
-      username: data.username,
-    });
+    callback(command.commandId);
   }
 
   /**
