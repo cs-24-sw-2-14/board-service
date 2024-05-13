@@ -68,7 +68,10 @@ class DrawPath {
     let erasedCoordinates = [];
     let curr: PathNode | null = this.head;
     while (curr?.next !== null) {
-      if (this.calculateDistance(coordinate, curr!.coordinate) <= threshold) {
+      if (
+        curr!.display &&
+        calculateDistance(coordinate, curr!.coordinate) <= threshold
+      ) {
         curr!.display = false;
         erasedCoordinates.push(curr!);
       }
