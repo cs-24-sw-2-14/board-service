@@ -123,13 +123,11 @@ class Drawing {
   fill: FillString;
   strokeWidth: StrokeWidth;
   constructor(
-    placement: Coordinate,
     initCoordinate: CanvasCoordinate,
     stroke: HexColorString,
     fill: FillString,
     strokeWidth: StrokeWidth,
   ) {
-    this.placement = placement;
     this.path = new DrawPath();
     this.path.add(initCoordinate);
     this.strokeWidth = strokeWidth;
@@ -160,6 +158,7 @@ class Drawing {
 export class DrawCommand extends Drawing implements Command {
   commandId: CommandId;
   owner: Username;
+  offset: CanvasCoordinate;
   display: Boolean;
   constructor(
     commandId: CommandId,
@@ -170,6 +169,7 @@ export class DrawCommand extends Drawing implements Command {
     strokeWidth: StrokeWidth,
     this.commandId = commandId;
     this.owner = owner;
+    this.offset = { x: 0, y: 0 };
     this.display = true;
   }
   /**
