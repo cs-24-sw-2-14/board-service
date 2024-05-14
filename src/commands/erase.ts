@@ -3,7 +3,7 @@ import { type PathNode, DrawCommand } from "./draw";
 import {
   Command,
   CommandId,
-  CanvasCoordinate,
+  CanvasCoordinateSet,
   Threshold,
   Username,
 } from "../types";
@@ -46,7 +46,7 @@ export class EraseCommand implements Command {
    * @param commandIds - array of commandIds to be erased from
    * @param coordinate - coordinate to erase from commands
    */
-  eraseFromDrawCommands(commandIds: CommandId[], coordinate: CanvasCoordinate) {
+  eraseFromDrawCommands(commandIds: CommandId[], coordinate: CanvasCoordinateSet) {
     let erasedCoordinates: PathNode[] = [];
     commandIds.forEach((commandId) => {
       if (!this.stack.has(commandId)) return;

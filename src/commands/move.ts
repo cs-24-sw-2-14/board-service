@@ -1,5 +1,5 @@
 import { Namespace } from "socket.io";
-import { Command, CommandId, Username, CanvasCoordinate } from "../types";
+import { Command, CommandId, Username, CanvasCoordinateSet } from "../types";
 import { DrawCommand } from "./draw";
 
 /**
@@ -14,14 +14,14 @@ import { DrawCommand } from "./draw";
 export class MoveCommand implements Command {
   commandId: CommandId;
   owner: Username;
-  movedOffset: CanvasCoordinate;
-  oldCoordinate: CanvasCoordinate;
+  movedOffset: CanvasCoordinateSet;
+  oldCoordinate: CanvasCoordinateSet;
   movedCommand: DrawCommand;
   display: Boolean;
   constructor(
     commandId: CommandId,
     owner: Username,
-    movedOffset: CanvasCoordinate,
+    movedOffset: CanvasCoordinateSet,
     movedCommand: DrawCommand,
   ) {
     this.commandId = commandId;

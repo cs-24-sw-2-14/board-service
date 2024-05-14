@@ -1,7 +1,7 @@
 import { Namespace } from "socket.io";
 import {
   Command,
-  CanvasCoordinate,
+  CanvasCoordinateSet,
   CommandId,
   HexColorString,
   FillString,
@@ -19,10 +19,10 @@ import { calculateDistance } from "../utils";
  * @param display - Indicates whether the coordinate should be displayed when rendered
  */
 export class PathNode {
-  position: CanvasCoordinate;
+  position: CanvasCoordinateSet;
   next: PathNode | null;
   display: boolean;
-  constructor(position: CanvasCoordinate) {
+  constructor(position: CanvasCoordinateSet) {
     this.position = position;
     this.display = true;
     this.next = null;
@@ -44,7 +44,7 @@ class DrawPath {
    * Adds a coordinate as pathNode to the linked list
    * @param position - The new coordinate to be added
    */
-  add(position: CanvasCoordinate) {
+  add(position: CanvasCoordinateSet) {
     let newNode = new PathNode(position);
     if (this.head === null) {
       this.head = newNode;
@@ -62,7 +62,7 @@ class DrawPath {
    * @param threshold - The radius of the erased 'circle'
    */
   eraseFromCoordinate(
-    position: CanvasCoordinate,
+    position: CanvasCoordinateSet,
     threshold: Threshold,
   ): PathNode[] {
     let erasedCoordinates = [];
@@ -123,7 +123,7 @@ class Drawing {
   fill: FillString;
   strokeWidth: StrokeWidth;
   constructor(
-    initCoordinate: CanvasCoordinate,
+    initCoordinate: CanvasCoordinateSet,
     stroke: HexColorString,
     fill: FillString,
     strokeWidth: StrokeWidth,
@@ -158,12 +158,12 @@ class Drawing {
 export class DrawCommand extends Drawing implements Command {
   commandId: CommandId;
   owner: Username;
-  position: CanvasCoordinate;
+  position: CanvasCoordinateSet;
   display: Boolean;
   constructor(
     commandId: CommandId,
     owner: Username,
-    initCoordinate: CanvasCoordinate,
+    initCoordinate: CanvasCoordinateSet,
     stroke: HexColorString,
     fill: FillString,
     strokeWidth: StrokeWidth,

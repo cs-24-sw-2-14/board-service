@@ -1,5 +1,5 @@
 import type {
-  CanvasCoordinate,
+  CanvasCoordinateSet,
   HexColorString,
   FillString,
   StrokeWidth,
@@ -32,7 +32,7 @@ export interface SocketData {
 export type StartAck = (commandId: CommandId) => void;
 
 export interface StartDrawEvent {
-  position: CanvasCoordinate;
+  position: CanvasCoordinateSet;
   stroke: HexColorString;
   fill: FillString;
   strokeWidth: StrokeWidth;
@@ -40,31 +40,31 @@ export interface StartDrawEvent {
 }
 
 export interface DoDrawEvent {
-  position: CanvasCoordinate;
+  position: CanvasCoordinateSet;
   commandId: CommandId;
 }
 
 export interface StartEraseEvent {
-  position: CanvasCoordinate;
+  position: CanvasCoordinateSet;
   commandIdsUnderCursor: CommandId[];
   threshold: Threshold;
   username: Username;
 }
 
 export interface DoEraseEvent {
-  position: CanvasCoordinate;
+  position: CanvasCoordinateSet;
   commandIdsUnderCursor: CommandId[];
   commandId: CommandId;
 }
 
 export interface StartMoveEvent {
   movedCommandId: CommandId;
-  position: CanvasCoordinate;
+  position: CanvasCoordinateSet;
   username: Username;
 }
 
 export interface DoMoveEvent {
-  position: CanvasCoordinate;
+  position: CanvasCoordinateSet;
   commandId: CommandId;
 }
 
@@ -83,7 +83,7 @@ export interface RedoEvent {
 
 export interface EditEvent {
   svgString?: SvgString;
-  position?: CanvasCoordinate;
+  position?: CanvasCoordinateSet;
   commandId: CommandId;
 }
 

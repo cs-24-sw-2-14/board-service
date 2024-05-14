@@ -2,7 +2,7 @@ import { Namespace } from "socket.io";
 export interface User {
   name: Username;
   color?: Color;
-  position?: CanvasCoordinate;
+  position?: CanvasCoordinateSet;
 }
 export type CommandId = number;
 export type ColorName = string;
@@ -41,12 +41,12 @@ export interface FindUserInterface {
   username: string;
 }
 
-export type Coordinate = {
+export type CoordinateSet = {
   x: number;
   y: number;
 };
 
-export type CanvasCoordinate = Coordinate;
+export type CanvasCoordinateSet = CoordinateSet;
 
 export interface Command {
   commandId: CommandId;
@@ -58,5 +58,5 @@ export interface Command {
 }
 
 export interface PhysicalCommand extends Command {
-  placement: CanvasCoordinate;
+  placement: CanvasCoordinateSet;
 }
