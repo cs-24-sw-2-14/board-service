@@ -54,7 +54,7 @@ export class CommandController {
    * Redoes the oldest command undoed by the given user
    * @param username - user which redoes
    */
-  redo(username: string) {
+  redo(username: Username) {
     if (this.stack.size === 0) return;
     for (const command of this.stack) {
       if (command[1].owner !== username || !command[1].execute) continue;
