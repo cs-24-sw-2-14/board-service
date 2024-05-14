@@ -1,4 +1,4 @@
-import { Coordinate } from "./types";
+import { CoordinateSet } from "./types";
 
 /**
  * Calculates the distance between two coordinates
@@ -7,8 +7,8 @@ import { Coordinate } from "./types";
  * @return distance between coordinates
  */
 export function calculateDistance(
-  coord1: Coordinate,
-  coord2: Coordinate,
+  coord1: CoordinateSet,
+  coord2: CoordinateSet,
 ): number {
   return Math.sqrt(
     Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
