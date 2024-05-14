@@ -5,17 +5,17 @@ import { MoveCommand } from "./commands/move";
 import { User, BoardId, CommandId, Username } from "./types";
 import {
   StartAck,
-  StartDraw,
-  DoDraw,
-  StartErase,
-  DoErase,
-  StartMove,
-  DoMove,
+  StartDrawEvent,
+  DoDrawEvent,
+  StartEraseEvent,
+  DoEraseEvent,
+  StartMoveEvent,
+  DoMoveEvent,
   ClientToServerEvents,
   ServerToClientEvents,
   SocketData,
-  Redo,
-  Undo,
+  RedoEvent,
+  UndoEvent,
 } from "./socketioInterfaces";
 import { CommandController } from "./commandController";
 
@@ -77,7 +77,7 @@ export class Board {
    * @param data, of interface StartDraw
    * @param callback, of interface StartAck
    */
-  handleStartDraw(data: StartDraw, callback: StartAck) {
+  handleStartDraw(data: StartDrawEvent, callback: StartAck) {
     const command = new DrawCommand(
       this.currentCommandId++,
       data.username,
@@ -94,7 +94,7 @@ export class Board {
    * Edits a DrawCommand, and executes it, to send changes to clients
    * @param data, of interface DoDraw
    */
-  handleDoDraw(data: DoDraw) {
+  handleDoDraw(data: DoDrawEvent) {
     const drawCommand = this.controller.stack.get(
       data.commandId,
     ) as DrawCommand;
@@ -109,7 +109,7 @@ export class Board {
    * @param data, of interface StartErase
    * @param callback, of interface StartAck
    */
-  handleStartErase(data: StartErase, callback: StartAck) {
+  handleStartErase(data: StartEraseEvent, callback: StartAck) {
     const command = new EraseCommand(
       this.currentCommandId++,
       data.username,
@@ -127,7 +127,7 @@ export class Board {
    * Edits a EraseCommand, and executes it, to send changes to clients
    * @param data, of interface DoErase
    */
-  handleDoErase(data: DoErase) {
+  handleDoErase(data: DoEraseEvent) {
     const eraseCommand = this.controller.stack.get(
       data.commandId,
     ) as EraseCommand;
@@ -144,7 +144,7 @@ export class Board {
    * @param data, of interface StartMove
    * @param callback, of interface StartAck
    */
-  handleStartMove(data: StartMove, callback: StartAck) {
+  handleStartMove(data: StartMoveEvent, callback: StartAck) {
     const command = new MoveCommand(
       this.currentCommandId++,
       data.username,
@@ -159,7 +159,7 @@ export class Board {
    * Edits a MoveCommand, and executes it, to send changes to clients
    * @param data, of interface DoMove
    */
-  handleDoMove(data: DoMove) {
+  handleDoMove(data: DoMoveEvent) {
     if (!this.controller.stack.get(data.commandId)) return;
     const moveCommand = this.controller.stack.get(
       data.commandId,
@@ -172,7 +172,7 @@ export class Board {
    * Executes the undo action for the given user
    * @param data, of interface Undo
    */
-  handleUndo(data: Undo) {
+  handleUndo(data: UndoEvent) {
     this.controller.undo(data.username);
   }
 
@@ -180,7 +180,7 @@ export class Board {
    * Executes the redo action for the given user
    * @param data, of interface Redo
    */
-  handleRedo(data: Redo) {
+  handleRedo(data: RedoEvent) {
     this.controller.redo(data.username);
   }
 }
