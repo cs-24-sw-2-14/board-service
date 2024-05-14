@@ -26,5 +26,5 @@ jobs:
           docker stop ${{ vars.IMAGE_NAME }}
           docker rm ${{ vars.IMAGE_NAME }}
           docker rmi ${{ env.IMAGE }}
-          docker run -d -p ${{ vars.SERVICE_PORT }}:3000 --name ${{ vars.IMAGE_NAME }} ${{ env.IMAGE }}:latest
+          docker run -d -p ${{ vars.SERVICE_PORT }}:5123 --name ${{ vars.IMAGE_NAME }} ${{ env.IMAGE }}:latest
 
