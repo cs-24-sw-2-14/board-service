@@ -81,7 +81,7 @@ export class Board {
     const command = new DrawCommand(
       this.currentCommandId++,
       data.username,
-      data.coordinate,
+      data.position,
       data.stroke,
       data.fill,
       data.strokeWidth,
@@ -99,7 +99,7 @@ export class Board {
       data.commandId,
     ) as DrawCommand;
     if (!drawCommand) return;
-    drawCommand.path.add(data.coordinate);
+    drawCommand.path.add(data.position);
     drawCommand.execute(this.namespace);
   }
 
@@ -117,7 +117,7 @@ export class Board {
       this.controller.stack,
     );
 
-    command.eraseFromDrawCommands(data.commandIdsUnderCursor, data.coordinate);
+    command.eraseFromDrawCommands(data.commandIdsUnderCursor, data.position);
 
     this.controller.execute(command, data.username);
     callback(command.commandId);
@@ -133,7 +133,7 @@ export class Board {
     ) as EraseCommand;
     eraseCommand.eraseFromDrawCommands(
       data.commandIdsUnderCursor,
-      data.coordinate,
+      data.position,
     );
     eraseCommand.execute(this.namespace);
   }
@@ -148,7 +148,7 @@ export class Board {
     const command = new MoveCommand(
       this.currentCommandId++,
       data.username,
-      data.offset,
+      data.position,
       this.controller.stack.get(data.movedCommandId) as DrawCommand,
     );
     this.controller.execute(command, data.username);
@@ -164,7 +164,7 @@ export class Board {
     const moveCommand = this.controller.stack.get(
       data.commandId,
     )! as MoveCommand;
-    moveCommand.movedOffset = data.offset;
+    moveCommand.movedOffset = data.position;
     moveCommand.execute(this.namespace);
   }
 
