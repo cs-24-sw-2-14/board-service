@@ -14,16 +14,16 @@ import { calculateDistance } from "../utils";
 
 /**
  * Represents a Node in the linked list representing a svg Path
- * @param coordinate - The CanvasCoordinate, where the Node is located
+ * @param position - The CanvasCoordinate, where the Node is located
  * @param next - The PathNode in the linked list
  * @param display - Indicates whether the coordinate should be displayed when rendered
  */
 export class PathNode {
-  coordinate: CanvasCoordinate;
+  position: CanvasCoordinate;
   next: PathNode | null;
   display: boolean;
-  constructor(coordinate: CanvasCoordinate) {
-    this.coordinate = coordinate;
+  constructor(position: CanvasCoordinate) {
+    this.position = position;
     this.display = true;
     this.next = null;
   }
@@ -42,10 +42,10 @@ class DrawPath {
 
   /**
    * Adds a coordinate as pathNode to the linked list
-   * @param coordinate - The new coordinate to be added
+   * @param position - The new coordinate to be added
    */
-  add(coordinate: CanvasCoordinate) {
-    let newNode = new PathNode(coordinate);
+  add(position: CanvasCoordinate) {
+    let newNode = new PathNode(position);
     if (this.head === null) {
       this.head = newNode;
     } else {
@@ -58,11 +58,11 @@ class DrawPath {
    * 'Erases' a coordinate (by settings display to false), from a coordinate and a threshold
    * @example if the distance from the given coordinate to a pathNode in the linked list
    * is lower than the threshold, the display property of that element is set to false
-   * @param coordinate - The coordinate in the center of the erased 'circle'
+   * @param position - The coordinate in the center of the erased 'circle'
    * @param threshold - The radius of the erased 'circle'
    */
   eraseFromCoordinate(
-    coordinate: CanvasCoordinate,
+    position: CanvasCoordinate,
     threshold: Threshold,
   ): PathNode[] {
     let erasedCoordinates = [];
@@ -70,7 +70,7 @@ class DrawPath {
     while (curr?.next !== null) {
       if (
         curr!.display &&
-        calculateDistance(coordinate, curr!.coordinate) <= threshold
+        calculateDistance(position, curr!.position) <= threshold
       ) {
         curr!.display = false;
         erasedCoordinates.push(curr!);
@@ -94,16 +94,16 @@ class DrawPath {
       if (curr.display) {
         if (curr.next.display) {
           pathString =
-            `L${curr.coordinate.x},${curr.coordinate.y}` + pathString;
+            `L${curr.position.x},${curr.position.y}` + pathString;
         } else {
           pathString =
-            `M${curr.coordinate.x},${curr.coordinate.y}` + pathString;
+            `M${curr.position.x},${curr.position.y}` + pathString;
         }
       }
       curr = curr.next;
     }
     if (curr !== null && curr.display) {
-      pathString = `M${curr.coordinate.x},${curr.coordinate.y}` + pathString;
+      pathString = `M${curr.position.x},${curr.position.y}` + pathString;
     }
     return pathString;
   }
@@ -158,7 +158,7 @@ class Drawing {
 export class DrawCommand extends Drawing implements Command {
   commandId: CommandId;
   owner: Username;
-  offset: CanvasCoordinate;
+  position: CanvasCoordinate;
   display: Boolean;
   constructor(
     commandId: CommandId,
@@ -171,7 +171,7 @@ export class DrawCommand extends Drawing implements Command {
     super(initCoordinate, stroke, fill, strokeWidth);
     this.commandId = commandId;
     this.owner = owner;
-    this.offset = { x: 0, y: 0 };
+    this.position = { x: 0, y: 0 };
     this.display = true;
   }
   /**
@@ -181,7 +181,7 @@ export class DrawCommand extends Drawing implements Command {
   execute(socket: Namespace) {
     socket.emit("edit", {
       svgString: this.stringify(),
-      placement: this.offset,
+      position: this.position,
       commandId: this.commandId,
     });
   }
