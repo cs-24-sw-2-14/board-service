@@ -1,39 +1,48 @@
-import { Namespace } from "socket.io"
-import { CommandInterface } from "../commandController"
+import { Namespace } from "socket.io";
+import { Command, CommandId, Username, CanvasCoordinateSet } from "../types";
+import { DrawCommand } from "./draw";
 
-// TODO: Move shared types to shared types file
-export interface Coordinate {
-  x: number;
-  y: number;
-}
-
-export class MoveCommand implements CommandInterface {
-  commandId: number
-  owner: string
-  movedCommandId: number
-  newCoordinate: Coordinate
-  oldCoordinate: Coordinate
-  constructor(commandId: number, movedCommandId: number, owner: string, newCoordinate: Coordinate, oldCoordinate: Coordinate) {
+/**
+ * Represents an MoveCommand, which moves a commands placement
+ * @attribute commandId - the commandId identifying the command
+ * @attribute owner - owner of the command
+ * @attribute movedOffset - the offset to move the moved command
+ * @attribute oldCoordinate - the old placement of the moved command
+ * @attribute movedCommandId - the commandId of the moved command
+ * @attribute display -  threshold
+ */
+export class MoveCommand implements Command {
+  commandId: CommandId;
+  owner: Username;
+  movedOffset: CanvasCoordinateSet;
+  oldCoordinate: CanvasCoordinateSet;
+  movedCommand: DrawCommand;
+  display: Boolean;
+  constructor(
+    commandId: CommandId,
+    owner: Username,
+    movedOffset: CanvasCoordinateSet,
+    movedCommand: DrawCommand,
+  ) {
     this.commandId = commandId;
-    this.owner = owner
-    this.movedCommandId = movedCommandId
-    this.newCoordinate = newCoordinate
-    this.oldCoordinate = oldCoordinate
+    this.owner = owner;
+    this.movedOffset = movedOffset ?? { x: 0, y: 0 };
+    this.oldCoordinate = movedCommand.position;
+    this.movedCommand = movedCommand;
+    this.display = true;
   }
   execute(socket: Namespace) {
-    socket.emit("edit", {
-      x: this.newCoordinate.x,
-      y: this.newCoordinate.y,
-      commandId: this.movedCommandId
-    })
+    this.movedCommand.position = {
+      x: this.oldCoordinate.x + this.movedOffset.x,
+      y: this.oldCoordinate.y + this.movedOffset.y,
+    };
+    this.movedCommand.execute(socket);
   }
   undo(socket: Namespace) {
-    socket.emit("remove", {
-      commandId: this.commandId
-    })
+    this.movedCommand.position = this.oldCoordinate;
+    this.movedCommand.execute(socket);
   }
   redo(socket: Namespace) {
-    this.execute(socket)
+    this.execute(socket);
   }
 }
-

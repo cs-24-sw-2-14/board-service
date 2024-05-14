@@ -1,64 +1,66 @@
 import { Namespace } from "socket.io";
+import { Command, CommandId, Username } from "./types";
 import { DrawCommand } from "./commands/draw";
-import { MoveCommand } from "./commands/move";
 import { EraseCommand } from "./commands/erase";
+import { MoveCommand } from "./commands/move";
 
-export interface CommandInterface {
-  commandId: number;
-  owner: string;
-  execute: (socket: Namespace) => void;
-  undo: (socket: Namespace) => void;
-  redo: (socket: Namespace) => void;
-}
-
-// TODO: Implement type for a command, so we dont have to write DrawCommand | MoveCommand | EraseCommand
-
+/**
+ * Controller which is responsible for executing, redoing and undoing commands
+ * @param stack - Stores the comamnds, as a map, mapping commandids to commands
+ * @param namespace - namespace instance of socketio, used to send events
+ */
 export class CommandController {
-  undoStack: (DrawCommand | MoveCommand | EraseCommand)[];
-  redoStack: (DrawCommand | MoveCommand | EraseCommand)[];
+  stack: Map<CommandId, DrawCommand | EraseCommand | MoveCommand>;
   namespace: Namespace;
   constructor(namespace: Namespace) {
-    this.undoStack = [];
-    this.redoStack = [];
+    this.stack = new Map();
     this.namespace = namespace;
   }
-  execute(command: DrawCommand | MoveCommand | EraseCommand, username: string) {
+
+  /**
+   * Executes a command, adding in to the stack. Removes all undone elements belonging to user
+   * @param command - Command to be executed
+   * @param username - user which executes the command
+   */
+  execute(
+    command: DrawCommand | EraseCommand | MoveCommand,
+    username: Username,
+  ) {
+    for (const command of this.stack) {
+      if (command[1].owner !== username || command[1].display) continue;
+      this.stack.delete(command[0]);
+    }
     command.execute(this.namespace);
-    this.redoStack = this.redoStack.filter((command) => {
-      if (command.owner === username) return false;
-      return true;
-    });
-    this.undoStack.push(command);
-  }
-  undo(username: string) {
-    if (this.undoStack.length === 0) return;
-    const commandIndex = this.undoStack.findLastIndex(
-      (command: DrawCommand | MoveCommand | EraseCommand) =>
-        command.owner === username,
-    );
-    if (commandIndex === -1) return;
-    const command = this.undoStack.splice(commandIndex, 1)[0];
-    command.undo(this.namespace);
-    this.redoStack.push(command);
+    this.stack.set(command.commandId, command);
   }
 
-  redo(username: string) {
-    if (this.redoStack.length === 0) return;
-    const commandIndex = this.redoStack.findLastIndex(
-      (command: DrawCommand | MoveCommand | EraseCommand) =>
-        command.owner === username,
-    );
-    if (commandIndex === -1) return;
-    const command = this.redoStack.splice(commandIndex, 1)[0];
-    command.redo(this.namespace);
-    let spliceIndex = 0;
-    // Find the index to insert the command into the undo stack
-    for (let i = this.undoStack.length - 1; i >= 0; i--) {
-      if (this.undoStack[i].commandId < command.commandId) {
-        spliceIndex = i + 1;
-        break;
-      }
+  /**
+   * Undoes the latest command executed by the given user
+   * @param username - user which undoes
+   */
+  undo(username: Username) {
+    if (this.stack.size === 0) return;
+    let latestCommand: Command | null = null;
+    for (const command of this.stack) {
+      if (command[1].owner !== username) continue;
+      latestCommand = command[1];
     }
-    this.undoStack.splice(spliceIndex, 0, command);
+    if (latestCommand === null) return;
+    latestCommand.display = false;
+    latestCommand.undo(this.namespace);
+  }
+
+  /**
+   * Redoes the oldest command undoed by the given user
+   * @param username - user which redoes
+   */
+  redo(username: Username) {
+    if (this.stack.size === 0) return;
+    for (const command of this.stack) {
+      if (command[1].owner !== username || !command[1].execute) continue;
+      command[1].display = true;
+      command[1].redo(this.namespace);
+      break;
+    }
   }
 }
