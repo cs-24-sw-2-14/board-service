@@ -1,40 +1,51 @@
 import { Namespace } from "socket.io";
-import { CommandInterface } from "../commandController";
+import {
+  Command,
+  CanvasCoordinateSet,
+  CommandId,
+  HexColorString,
+  FillString,
+  StrokeWidth,
+  Threshold,
+  SvgString,
+  Username,
+} from "../types";
+import { calculateDistance } from "../utils";
 
-export enum CoordinateType {
-  moveto,
-  lineto,
-}
-
-// TODO: Move shared types to shared types file
-export interface Coordinate {
-  x: number;
-  y: number;
-}
-
-export interface PathCoordinate extends Coordinate {
-  type: CoordinateType;
-}
-
+/**
+ * Represents a Node in the linked list representing a svg Path
+ * @param position - The CanvasCoordinate, where the Node is located
+ * @param next - The PathNode in the linked list
+ * @param display - Indicates whether the coordinate should be displayed when rendered
+ */
 export class PathNode {
-  coordinate: Coordinate;
+  position: CanvasCoordinateSet;
   next: PathNode | null;
   display: boolean;
-  constructor(coordinate: Coordinate) {
-    this.coordinate = coordinate;
+  constructor(position: CanvasCoordinateSet) {
+    this.position = position;
     this.display = true;
     this.next = null;
   }
 }
 
+/**
+ * Represents a Svg Path as linked list
+ * @remark The linked list is the reversed version of the drawPath
+ * @param head - The head of the linked list
+ */
 class DrawPath {
   head: PathNode | null;
   constructor() {
     this.head = null;
   }
 
-  add(pathCoordinate: PathCoordinate) {
-    let newNode = new PathNode(pathCoordinate);
+  /**
+   * Adds a coordinate as pathNode to the linked list
+   * @param position - The new coordinate to be added
+   */
+  add(position: CanvasCoordinateSet) {
+    let newNode = new PathNode(position);
     if (this.head === null) {
       this.head = newNode;
     } else {
@@ -43,18 +54,24 @@ class DrawPath {
     }
   }
 
-  // Function to calculate distance between two coordinates
-  calculateDistance(coord1: Coordinate, coord2: Coordinate): number {
-    return Math.sqrt(
-      Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
-    );
-  }
-
-  eraseFromCoordinate(coordinate: Coordinate, threshold: number): PathNode[] {
+  /**
+   * 'Erases' a coordinate (by settings display to false), from a coordinate and a threshold
+   * @example if the distance from the given coordinate to a pathNode in the linked list
+   * is lower than the threshold, the display property of that element is set to false
+   * @param position - The coordinate in the center of the erased 'circle'
+   * @param threshold - The radius of the erased 'circle'
+   */
+  eraseFromCoordinate(
+    position: CanvasCoordinateSet,
+    threshold: Threshold,
+  ): PathNode[] {
     let erasedCoordinates = [];
     let curr: PathNode | null = this.head;
     while (curr?.next !== null) {
-      if (this.calculateDistance(coordinate, curr!.coordinate) <= threshold) {
+      if (
+        curr!.display &&
+        calculateDistance(position, curr!.position) <= threshold
+      ) {
         curr!.display = false;
         erasedCoordinates.push(curr!);
       }
@@ -63,7 +80,13 @@ class DrawPath {
     return erasedCoordinates;
   }
 
-  stringify(): string {
+  /**
+   * Converts the linked list of PathNode's to a string
+   * @example if the previous element (the next element in the linked list, since it represents the reversed svg path),
+   * is not displayed, the coordinate type should be moveto, since it desired to render a gap when a coordinate is not displayed
+   * @return the linked list converted to a svg pathstring
+   */
+  stringify(): SvgString {
     if (this.head === null) return "";
     let curr: PathNode | null = this.head;
     let pathString = "";
@@ -71,86 +94,110 @@ class DrawPath {
       if (curr.display) {
         if (curr.next.display) {
           pathString =
-            `L${curr.coordinate.x},${curr.coordinate.y}` + pathString;
+            `L${curr.position.x},${curr.position.y}` + pathString;
         } else {
           pathString =
-            `M${curr.coordinate.x},${curr.coordinate.y}` + pathString;
+            `M${curr.position.x},${curr.position.y}` + pathString;
         }
       }
       curr = curr.next;
     }
     if (curr !== null && curr.display) {
-      pathString = `M${curr.coordinate.x},${curr.coordinate.y}` + pathString;
+      pathString = `M${curr.position.x},${curr.position.y}` + pathString;
     }
     return pathString;
   }
 }
 
-export interface ErasePath {
-  path: Coordinate[];
-  commandId: number;
-  threshold: number;
-}
-
-export class Drawing {
-  placement: Coordinate;
+/**
+ * Represents a drawing
+ * @param path - DrawPath object representing the svg path
+ * @param stroke - The color of the drawings stroke
+ * @param fill - the color to the path with, usually transparent, since no fill functionality is implemented
+ * @param strokeWidth - The width of the stroke
+ * @return the linked list converted to a svg pathstring
+ */
+class Drawing {
   path: DrawPath;
-  stroke: string;
-  fill: string;
-  strokeWidth: number;
+  stroke: HexColorString;
+  fill: FillString;
+  strokeWidth: StrokeWidth;
   constructor(
-    placement: Coordinate,
-    initCoordinate: Coordinate,
-    stroke: string,
-    fill: string,
-    strokeWidth: number,
+    initCoordinate: CanvasCoordinateSet,
+    stroke: HexColorString,
+    fill: FillString,
+    strokeWidth: StrokeWidth,
   ) {
-    this.placement = placement;
     this.path = new DrawPath();
-    this.path.add({
-      type: CoordinateType.moveto,
-      x: initCoordinate.x,
-      y: initCoordinate.y,
-    });
+    this.path.add(initCoordinate);
     this.strokeWidth = strokeWidth;
     this.fill = fill;
     this.stroke = stroke;
   }
 
-  // Function to calculate distance between two coordinates
-  calculateDistance(coord1: Coordinate, coord2: Coordinate): number {
-    return Math.sqrt(
-      Math.pow(coord1.x - coord2.x, 2) + Math.pow(coord1.y - coord2.y, 2),
-    );
-  }
-
+  /**
+   * Converts the drawing to an svg string
+   * @return svg string, representing the drawing
+   */
   stringify() {
     return `<path stroke='${this.stroke}' fill='${this.fill}' stroke-width='${this.strokeWidth}' d='${this.path.stringify()}' />`;
   }
 }
 
-export class DrawCommand implements CommandInterface {
-  commandId: number;
-  drawing: Drawing;
-  owner: string;
-  constructor(commandId: number, drawing: Drawing, owner: string) {
+/**
+ * Represents a draw instruction
+ * @param commandId - The commandId of the DrawCommand
+ * @param owner - The user which created the command, therefore 'owning' it
+ * @param initCoordinate - The first coordinate at which the drawing starts
+ * @param stroke - The color of the drawings stroke
+ * @param fill - the color to the path with, usually transparent, since no fill functionality is implemented
+ * @param strokeWidth - The width of the stroke
+ * @attribute offset - The offset of the command on the canvas
+ * @attribute display - indicates whether the command should be displayed, initilized to true
+ */
+export class DrawCommand extends Drawing implements Command {
+  commandId: CommandId;
+  owner: Username;
+  position: CanvasCoordinateSet;
+  display: Boolean;
+  constructor(
+    commandId: CommandId,
+    owner: Username,
+    initCoordinate: CanvasCoordinateSet,
+    stroke: HexColorString,
+    fill: FillString,
+    strokeWidth: StrokeWidth,
+  ) {
+    super(initCoordinate, stroke, fill, strokeWidth);
     this.commandId = commandId;
-    this.drawing = drawing;
     this.owner = owner;
+    this.position = { x: 0, y: 0 };
+    this.display = true;
   }
+  /**
+   * Executes the DrawCommand, sending the changes to the clients
+   * @param socket - namespace to send events on
+   */
   execute(socket: Namespace) {
     socket.emit("edit", {
-      svg: this.drawing.stringify(),
-      x: this.drawing.placement.x,
-      y: this.drawing.placement.y,
+      svgString: this.stringify(),
+      position: this.position,
       commandId: this.commandId,
     });
   }
+  /**
+   * Undos the DrawCommand by removing it from the clients
+   * @param socket - namespace to send events on
+   */
   undo(socket: Namespace) {
     socket.emit("remove", {
       commandId: this.commandId,
     });
   }
+  /**
+   * Redos the DrawCommand by invoking execute function
+   * @param socket - namespace to send events on
+   */
   redo(socket: Namespace) {
     this.execute(socket);
   }

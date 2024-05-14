@@ -1,12 +1,10 @@
 import { Namespace } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { CommandInterface } from "../commandController";
-import { Coordinate } from "./move";
+import { Command, CoordinateSet } from "../types";
 
 export class Text {
-  placement: Coordinate;
+  placement: CoordinateSet;
   content: string;
-  constructor(placement: Coordinate, content: string){
+  constructor(placement: CoordinateSet, content: string){
     this.placement = placement;
     this.content = content;
   }
@@ -16,14 +14,16 @@ export class Text {
   }
 }
 
-export class TextCommand implements CommandInterface {
+export class TextCommand implements Command {
   commandId: number;
   owner: string;
   text: Text;
+  display: Boolean;
   constructor(commandId: number, text: Text, owner: string){
     this.commandId = commandId;
     this.owner = owner;
     this.text = text;
+    this.display = true;
   }
   execute(socket: Namespace) {
     socket.emit('edit', {

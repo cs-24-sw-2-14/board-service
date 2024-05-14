@@ -1,65 +1,95 @@
 import { Namespace } from "socket.io";
-import { CommandInterface } from "../commandController";
-import { type PathNode, DrawCommand, Coordinate } from "./draw";
+import { type PathNode, DrawCommand } from "./draw";
+import {
+  Command,
+  CommandId,
+  CanvasCoordinateSet,
+  Threshold,
+  Username,
+} from "../types";
 
-export class EraseCommand implements CommandInterface {
-  commandId: number;
+/**
+ * Represents an EraseCommand, which erases coordinates from a drawing
+ * @attribute commandId - the commandId identifying the command
+ * @attribute erasedCoordinates - array of references to the PathNodes, which are erased
+ * @attribute stack - reference to the stack hashmap, allowing access to commands from their commandIds
+ * @attribute erasedCommandIds - array of CommandIds, which are erased
+ * @attribute owner - owner of the command
+ * @attribute threshold - erase threshold
+ * @attribute display -  threshold
+ */
+export class EraseCommand implements Command {
+  commandId: CommandId;
   erasedCoordinates: PathNode[];
-  drawCommands: Map<number, DrawCommand>;
-  owner: string;
-  threshold: number;
-  constructor(commandId: number, owner: string, threshold: number) {
+  stack: Map<CommandId, Command>;
+  erasedCommandIds: CommandId[];
+  owner: Username;
+  threshold: Threshold;
+  display: Boolean;
+  constructor(
+    commandId: CommandId,
+    owner: Username,
+    threshold: Threshold,
+    stack: Map<CommandId, Command>,
+  ) {
     this.commandId = commandId;
     this.erasedCoordinates = [];
-    this.drawCommands = new Map();
+    this.stack = stack;
+    this.erasedCommandIds = [];
     this.owner = owner;
     this.threshold = threshold;
+    this.display = true;
   }
 
-  eraseFromDrawCommands(
-    drawCommands: DrawCommand[],
-    coordinate: Coordinate,
-    threshold: number,
-  ) {
-    console.log("erase from drawCommands");
-    drawCommands.forEach((drawCommand) => {
-      console.log("erase from drawCommand:" + drawCommand.commandId);
-      if (!this.drawCommands.has(drawCommand.commandId)) {
-        this.drawCommands.set(drawCommand.commandId, drawCommand);
+  /**
+   * 'Erases' a coordinate from a list of commandIds (by setting their display attribute to false)
+   * @param commandIds - array of commandIds to be erased from
+   * @param coordinate - coordinate to erase from commands
+   */
+  eraseFromDrawCommands(commandIds: CommandId[], coordinate: CanvasCoordinateSet) {
+    let erasedCoordinates: PathNode[] = [];
+    commandIds.forEach((commandId) => {
+      if (!this.stack.has(commandId)) return;
+      if (!this.erasedCommandIds.includes(commandId)) {
+        this.erasedCommandIds.push(commandId);
       }
-      let erasedCoordinates = drawCommand.drawing.path.eraseFromCoordinate(
+      let command = this.stack.get(commandId)! as DrawCommand;
+      erasedCoordinates = command.path.eraseFromCoordinate(
         coordinate,
-        threshold,
+        this.threshold,
       );
-      if (erasedCoordinates.length !== 0) {
-        this.erasedCoordinates = this.erasedCoordinates.concat(
-          this.erasedCoordinates,
-          erasedCoordinates,
-        );
-      }
     });
+    if (erasedCoordinates.length !== 0) {
+      this.erasedCoordinates = this.erasedCoordinates.concat(
+        this.erasedCoordinates,
+        erasedCoordinates,
+      );
+    }
   }
 
   execute(socket: Namespace) {
-    console.log("execute");
-    this.erasedCoordinates.forEach((erasedCoordinate) => {
-      erasedCoordinate.display = false;
-    });
-    this.drawCommands.forEach((drawCommand) => {
-      drawCommand.execute(socket);
-    });
+    this.update(socket, false);
   }
 
   undo(socket: Namespace) {
-    console.log("undo");
-    this.erasedCoordinates.forEach((erasedCoordinate) => {
-      erasedCoordinate.display = true;
-    });
-    this.drawCommands.forEach((drawCommand) => {
-      drawCommand.execute(socket);
-    });
+    this.update(socket, true);
   }
   redo(socket: Namespace) {
     this.execute(socket);
+  }
+
+  /**
+   * Updates the display attribute of all the pathnodes and executes the
+   * execute function on all affected drawCommands, to send changes to clients
+   * @param socket - socketio namespace instance, used to be able to send events
+   * @param state - the new display state
+   */
+  update(socket: Namespace, state: boolean) {
+    this.erasedCoordinates.forEach((erasedCoordinate) => {
+      erasedCoordinate.display = state;
+    });
+    this.erasedCommandIds.forEach((drawCommandId) => {
+      this.stack.get(drawCommandId)?.execute(socket);
+    });
   }
 }
