@@ -26,9 +26,9 @@ export class CommandController {
     command: DrawCommand | EraseCommand | MoveCommand,
     username: Username,
   ) {
-    for (const command of this.stack) {
-      if (command[1].owner !== username || command[1].display) continue;
-      this.stack.delete(command[0]);
+    for (const [commandId, command] of this.stack) {
+      if (command.owner !== username || command.display) continue;
+      this.stack.delete(commandId);
     }
     command.execute(this.namespace);
     this.stack.set(command.commandId, command);
@@ -43,7 +43,7 @@ export class CommandController {
     if (this.stack.size === 0) return;
     let latestCommand: Command | null = null;
     for (const [_, command] of this.stack) {
-      if (command.owner !== username || command.display !== true) continue;
+      if (command.owner !== username || !command.display) continue;
       latestCommand = command;
     }
     if (latestCommand === null) return;
@@ -59,7 +59,7 @@ export class CommandController {
     console.log("redo", username);
     if (this.stack.size === 0) return;
     for (const [_, command] of this.stack) {
-      if (command.owner !== username || !command.display) continue;
+      if (command.owner !== username || command.display) continue;
       command.display = true;
       command.redo(this.namespace);
       break;
