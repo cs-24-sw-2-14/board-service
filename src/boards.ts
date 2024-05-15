@@ -169,7 +169,7 @@ export class Board {
   }
 
   handleDoText(data: DoTextEvent) {
-    if (!this.controller.stack.get(data.commandId)) return;
+    if (!this.controller.stack.has(data.commandId)) return;
     const textCommand = this.controller.stack.get(
         data.commandId,
     )! as TextCommand;

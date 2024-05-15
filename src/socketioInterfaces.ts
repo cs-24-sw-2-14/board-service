@@ -8,7 +8,6 @@ import type {
   Username,
   SvgString,
 } from "./types";
-import exp from "node:constants";
 
 export interface ServerToClientEvents {
   edit: (data: EditEvent) => void;
