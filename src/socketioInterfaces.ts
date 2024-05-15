@@ -10,48 +10,48 @@ import type {
 } from "./types";
 
 export interface InitServerToClientEvents {
-  userChange: (data: UserChange) => void;
-  userRemove: (data: UserRemove) => void;
+  userChange: (data: UserChangeEvent) => void;
+  userRemove: (data: UserRemoveEvent) => void;
 }
 
 export interface ServerToClientEvents {
-  edit: (data: Edit) => void;
-  remove: (data: Remove) => void;
-  userChange: (data: UserChange) => void;
-  userRemove: (data: UserRemove) => void;
+  edit: (data: EditEvent) => void;
+  remove: (data: RemoveEvent) => void;
+  userChange: (data: UserChangeEvent) => void;
+  userRemove: (data: UserRemoveEvent) => void;
 }
 
 export interface ClientToServerEvents {
-  startDraw: (data: StartDraw, callback: StartAck) => void;
-  doDraw: (data: DoDraw) => void;
-  startErase: (data: StartErase, callback: StartAck) => void;
-  doErase: (data: DoErase) => void;
-  startMove: (data: StartMove, callback: StartAck) => void;
-  doMove: (data: DoMove) => void;
+  startDraw: (data: StartDrawEvent, callback: StartAck) => void;
+  doDraw: (data: DoDrawEvent) => void;
+  startErase: (data: StartEraseEvent, callback: StartAck) => void;
+  doErase: (data: DoEraseEvent) => void;
+  startMove: (data: StartMoveEvent, callback: StartAck) => void;
+  doMove: (data: DoMoveEvent) => void;
   startText: (data: StartTextEvent, callback: StartAck) => void;
   doText: (data: DoTextEvent, callback: StartAck) => void;
-  undo: (data: Undo) => void;
-  redo: (data: Redo) => void;
-  userChange: (data: UserChange) => void;
+  undo: (data: UndoEvent) => void;
+  redo: (data: RedoEvent) => void;
+  userChange: (data: UserChangeEvent) => void;
 }
 
 export interface SocketData {
   username: Username;
 }
 
-export interface UserChange {
+export interface UserChangeEvent {
   username: Username;
   color?: Color;
   position?: CanvasCoordinateSet;
 }
 
-export interface UserRemove {
+export interface UserRemoveEvent {
   username: Username;
 }
 
 export type StartAck = (commandId: CommandId) => void;
 
-export interface StartDraw {
+export interface StartDrawEvent {
   position: CanvasCoordinateSet;
   stroke: ColorString;
   fill: ColorString;
@@ -94,9 +94,11 @@ export interface StartTextEvent {
 }
 
 export interface DoTextEvent {
+  commandId: CommandId;
   content: string;
+}
 
-export interface StartSuccess {
+export interface StartSuccessEvent {
   commandId: CommandId;
   username: Username;
 }

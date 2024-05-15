@@ -1,24 +1,6 @@
 import { Server, Namespace, Socket } from "socket.io";
 import { DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
-import { MoveCommand } from "./commands/move";
-import { User, BoardId, CommandId, Username } from "./types";
-import {
-  StartAck,
-  StartDraw,
-  DoDraw,
-  StartErase,
-  DoErase,
-  StartMove,
-  DoMove,
-  ClientToServerEvents,
-  ServerToClientEvents,
-  SocketData,
-  Redo,
-  Undo,
-  UserChange,
-  InitServerToClientEvents,
-} from "./socketioInterfaces";
 import { CommandController } from "./commandController";
 import { MoveCommand } from "./commands/move";
 import { User, BoardId, CommandId, Username } from "./types";
@@ -30,11 +12,15 @@ import {
   DoEraseEvent,
   StartMoveEvent,
   DoMoveEvent,
+  UserChangeEvent,
   ClientToServerEvents,
   ServerToClientEvents,
+  InitServerToClientEvents,
   SocketData,
   RedoEvent,
-  UndoEvent, DoTextEvent, StartTextEvent,
+  UndoEvent,
+  DoTextEvent,
+  StartTextEvent,
 } from "./socketioInterfaces";
 import { TextCommand, Text } from "./commands/text";
 
@@ -223,11 +209,12 @@ export class Board {
     callback(command.commandId);
   }
   handleStartText(data: StartTextEvent, callback: StartAck) {
-    const text = new Text(
-      data.position,
-      ""
+    const text = new Text(data.position, "");
+    const command = new TextCommand(
+      this.currentCommandId++,
+      text,
+      data.username,
     );
-    const command = new TextCommand(this.currentCommandId++, text, data.username);
 
     this.controller.execute(command, data.username);
     callback(command.commandId);
@@ -236,7 +223,7 @@ export class Board {
   handleDoText(data: DoTextEvent) {
     if (!this.controller.stack.has(data.commandId)) return;
     const textCommand = this.controller.stack.get(
-        data.commandId,
+      data.commandId,
     )! as TextCommand;
     textCommand.text.content = data.content;
     textCommand.execute(this.namespace);
@@ -267,7 +254,7 @@ export class Board {
    * Executes the redo action for the given user
    * @param data, of interface Redo
    */
-  handleRedo(data: Redo) {
+  handleRedo(data: RedoEvent) {
     this.controller.redo(data.username);
   }
 
@@ -275,7 +262,7 @@ export class Board {
    * Updates the users on the board and sends changes to clients
    * @param data, of interface UserChange
    */
-  handleUserChange(data: UserChange) {
+  handleUserChange(data: UserChangeEvent) {
     if (!this.users.has(data.username)) return;
     const user = this.users.get(data.username);
     user!.color = data.color ?? user!.color;
