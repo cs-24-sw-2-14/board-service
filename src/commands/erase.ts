@@ -1,9 +1,9 @@
-import { Namespace } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import { type PathNode, DrawCommand } from "./draw";
 import {
   Command,
   CommandId,
-  CanvasCoordinate,
+  CanvasCoordinateSet,
   Threshold,
   Username,
 } from "../types";
@@ -46,7 +46,10 @@ export class EraseCommand implements Command {
    * @param commandIds - array of commandIds to be erased from
    * @param coordinate - coordinate to erase from commands
    */
-  eraseFromDrawCommands(commandIds: CommandId[], coordinate: CanvasCoordinate) {
+  eraseFromDrawCommands(
+    commandIds: CommandId[],
+    coordinate: CanvasCoordinateSet,
+  ) {
     let erasedCoordinates: PathNode[] = [];
     commandIds.forEach((commandId) => {
       if (!this.stack.has(commandId)) return;
@@ -67,14 +70,14 @@ export class EraseCommand implements Command {
     }
   }
 
-  execute(socket: Namespace) {
+  execute(socket: Namespace | Socket) {
     this.update(socket, false);
   }
 
-  undo(socket: Namespace) {
+  undo(socket: Namespace | Socket) {
     this.update(socket, true);
   }
-  redo(socket: Namespace) {
+  redo(socket: Namespace | Socket) {
     this.execute(socket);
   }
 
@@ -84,7 +87,7 @@ export class EraseCommand implements Command {
    * @param socket - socketio namespace instance, used to be able to send events
    * @param state - the new display state
    */
-  update(socket: Namespace, state: boolean) {
+  update(socket: Namespace | Socket, state: boolean) {
     this.erasedCoordinates.forEach((erasedCoordinate) => {
       erasedCoordinate.display = state;
     });
