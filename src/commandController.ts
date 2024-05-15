@@ -39,11 +39,12 @@ export class CommandController {
    * @param username - user which undoes
    */
   undo(username: Username) {
+    console.log("undo", username);
     if (this.stack.size === 0) return;
     let latestCommand: Command | null = null;
-    for (const command of this.stack) {
-      if (command[1].owner !== username) continue;
-      latestCommand = command[1];
+    for (const [_, command] of this.stack) {
+      if (command.owner !== username || command.display !== true) continue;
+      latestCommand = command;
     }
     if (latestCommand === null) return;
     latestCommand.display = false;
@@ -55,11 +56,12 @@ export class CommandController {
    * @param username - user which redoes
    */
   redo(username: string) {
+    console.log("redo", username);
     if (this.stack.size === 0) return;
-    for (const command of this.stack) {
-      if (command[1].owner !== username || !command[1].execute) continue;
-      command[1].display = true;
-      command[1].redo(this.namespace);
+    for (const [_, command] of this.stack) {
+      if (command.owner !== username || !command.display) continue;
+      command.display = true;
+      command.redo(this.namespace);
       break;
     }
   }
