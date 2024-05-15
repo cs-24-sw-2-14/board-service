@@ -56,19 +56,13 @@ export class Board {
       if (this.users.has(username)) {
         next(new Error("Username Already Taken"));
       }
-      for (const user of this.users) {
-        if (user[1].color === color) {
+      for (const [_, user] of this.users) {
+        if (user.color === color) {
           next(new Error("Color Already Taken"));
         }
       }
       this.users.set(username, {
         name: username,
-        color: color,
-        position: { x: 0, y: 0 },
-      });
-
-      this.namespace.emit("userChange", {
-        username: username,
         color: color,
         position: { x: 0, y: 0 },
       });
@@ -202,7 +196,7 @@ export class Board {
     const command = new MoveCommand(
       this.currentCommandId++,
       data.username,
-      data.position,
+      { x: 0, y: 0 },
       this.controller.stack.get(data.movedCommandId) as DrawCommand,
     );
     this.controller.execute(command, data.username);
