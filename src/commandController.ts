@@ -5,14 +5,6 @@ import { EraseCommand } from "./commands/erase";
 import { TextCommand } from "./commands/text";
 import { MoveCommand } from "./commands/move";
 
-export interface CommandInterface {
-  commandId: number;
-  owner: string;
-  execute: (socket: Namespace) => void;
-  undo: (socket: Namespace) => void;
-  redo: (socket: Namespace) => void;
-}
-
 /**
  * Controller which is responsible for executing, redoing and undoing commands
  * @param stack - Stores the comamnds, as a map, mapping commandids to commands
