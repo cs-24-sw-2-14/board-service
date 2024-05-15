@@ -1,10 +1,9 @@
-import { Namespace } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import {
   Command,
   CanvasCoordinateSet,
   CommandId,
-  HexColorString,
-  FillString,
+  ColorString,
   StrokeWidth,
   Threshold,
   SvgString,
@@ -93,11 +92,9 @@ class DrawPath {
     while (curr?.next !== null) {
       if (curr.display) {
         if (curr.next.display) {
-          pathString =
-            `L${curr.position.x},${curr.position.y}` + pathString;
+          pathString = `L${curr.position.x},${curr.position.y}` + pathString;
         } else {
-          pathString =
-            `M${curr.position.x},${curr.position.y}` + pathString;
+          pathString = `M${curr.position.x},${curr.position.y}` + pathString;
         }
       }
       curr = curr.next;
@@ -119,13 +116,13 @@ class DrawPath {
  */
 class Drawing {
   path: DrawPath;
-  stroke: HexColorString;
-  fill: FillString;
+  stroke: ColorString;
+  fill: ColorString;
   strokeWidth: StrokeWidth;
   constructor(
     initCoordinate: CanvasCoordinateSet,
-    stroke: HexColorString,
-    fill: FillString,
+    stroke: ColorString,
+    fill: ColorString,
     strokeWidth: StrokeWidth,
   ) {
     this.path = new DrawPath();
@@ -164,8 +161,8 @@ export class DrawCommand extends Drawing implements Command {
     commandId: CommandId,
     owner: Username,
     initCoordinate: CanvasCoordinateSet,
-    stroke: HexColorString,
-    fill: FillString,
+    stroke: ColorString,
+    fill: ColorString,
     strokeWidth: StrokeWidth,
   ) {
     super(initCoordinate, stroke, fill, strokeWidth);
@@ -178,7 +175,7 @@ export class DrawCommand extends Drawing implements Command {
    * Executes the DrawCommand, sending the changes to the clients
    * @param socket - namespace to send events on
    */
-  execute(socket: Namespace) {
+  execute(socket: Namespace | Socket) {
     socket.emit("edit", {
       svgString: this.stringify(),
       position: this.position,
@@ -189,7 +186,7 @@ export class DrawCommand extends Drawing implements Command {
    * Undos the DrawCommand by removing it from the clients
    * @param socket - namespace to send events on
    */
-  undo(socket: Namespace) {
+  undo(socket: Namespace | Socket) {
     socket.emit("remove", {
       commandId: this.commandId,
     });
@@ -198,7 +195,7 @@ export class DrawCommand extends Drawing implements Command {
    * Redos the DrawCommand by invoking execute function
    * @param socket - namespace to send events on
    */
-  redo(socket: Namespace) {
+  redo(socket: Namespace | Socket) {
     this.execute(socket);
   }
 }

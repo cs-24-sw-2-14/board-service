@@ -1,18 +1,11 @@
-import { Namespace } from "socket.io";
+import { Namespace, Socket } from "socket.io";
+
 export interface User {
   name: Username;
-  color?: Color;
-  position?: CanvasCoordinateSet;
+  color: Color;
+  position: CanvasCoordinateSet;
 }
-export type CommandId = number;
-export type ColorName = string;
-export type HexColorString = string;
-export type FillString = string;
-export type StrokeWidth = number;
-export type Threshold = number;
-export type SvgString = string;
-export type BoardId = string;
-export type Username = string;
+
 export enum Color {
   red,
   orange,
@@ -26,20 +19,14 @@ export enum Color {
   pink,
 }
 
-export interface HandleUndoInterface {
-  username: string;
-}
-export interface HandleRedoInterface {
-  username: string;
-}
-
-export interface CreateUserInterface {
-  username: string;
-}
-
-export interface FindUserInterface {
-  username: string;
-}
+export type CommandId = number;
+export type ColorName = string;
+export type ColorString = string;
+export type StrokeWidth = number;
+export type Threshold = number;
+export type SvgString = string;
+export type BoardId = string;
+export type Username = string;
 
 export type CoordinateSet = {
   x: number;
@@ -52,11 +39,7 @@ export interface Command {
   commandId: CommandId;
   owner: Username;
   display: Boolean;
-  execute: (socket: Namespace) => void;
-  undo: (socket: Namespace) => void;
-  redo: (socket: Namespace) => void;
-}
-
-export interface PhysicalCommand extends Command {
-  placement: CanvasCoordinateSet;
+  execute: (socket: Namespace | Socket) => void;
+  undo: (socket: Namespace | Socket) => void;
+  redo: (socket: Namespace | Socket) => void;
 }

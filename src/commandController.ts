@@ -27,9 +27,9 @@ export class CommandController {
     command: DrawCommand | EraseCommand | MoveCommand | TextCommand,
     username: Username,
   ) {
-    for (const command of this.stack) {
-      if (command[1].owner !== username || command[1].display) continue;
-      this.stack.delete(command[0]);
+    for (const [commandId, command] of this.stack) {
+      if (command.owner !== username || command.display) continue;
+      this.stack.delete(commandId);
     }
     command.execute(this.namespace);
     this.stack.set(command.commandId, command);
@@ -40,11 +40,12 @@ export class CommandController {
    * @param username - user which undoes
    */
   undo(username: Username) {
+    console.log("undo", username);
     if (this.stack.size === 0) return;
     let latestCommand: Command | null = null;
-    for (const command of this.stack) {
-      if (command[1].owner !== username) continue;
-      latestCommand = command[1];
+    for (const [_, command] of this.stack) {
+      if (command.owner !== username || !command.display) continue;
+      latestCommand = command;
     }
     if (latestCommand === null) return;
     latestCommand.display = false;
@@ -55,12 +56,13 @@ export class CommandController {
    * Redoes the oldest command undoed by the given user
    * @param username - user which redoes
    */
-  redo(username: Username) {
+  redo(username: string) {
+    console.log("redo", username);
     if (this.stack.size === 0) return;
-    for (const command of this.stack) {
-      if (command[1].owner !== username || !command[1].display) continue;
-      command[1].display = true;
-      command[1].redo(this.namespace);
+    for (const [_, command] of this.stack) {
+      if (command.owner !== username || command.display) continue;
+      command.display = true;
+      command.redo(this.namespace);
       break;
     }
   }

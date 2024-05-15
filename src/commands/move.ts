@@ -1,4 +1,4 @@
-import { Namespace } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import { Command, CommandId, Username, CanvasCoordinateSet } from "../types";
 import { DrawCommand } from "./draw";
 
@@ -31,18 +31,18 @@ export class MoveCommand implements Command {
     this.movedCommand = movedCommand;
     this.display = true;
   }
-  execute(socket: Namespace) {
+  execute(socket: Namespace | Socket) {
     this.movedCommand.position = {
       x: this.oldCoordinate.x + this.movedOffset.x,
       y: this.oldCoordinate.y + this.movedOffset.y,
     };
     this.movedCommand.execute(socket);
   }
-  undo(socket: Namespace) {
+  undo(socket: Namespace | Socket) {
     this.movedCommand.position = this.oldCoordinate;
     this.movedCommand.execute(socket);
   }
-  redo(socket: Namespace) {
+  redo(socket: Namespace | Socket) {
     this.execute(socket);
   }
 }

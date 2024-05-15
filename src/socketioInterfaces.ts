@@ -1,17 +1,24 @@
 import type {
   CanvasCoordinateSet,
-  HexColorString,
-  FillString,
+  ColorString,
   StrokeWidth,
   CommandId,
   Threshold,
   Username,
   SvgString,
+  Color,
 } from "./types";
+
+export interface InitServerToClientEvents {
+  userChange: (data: UserChangeEvent) => void;
+  userRemove: (data: UserRemoveEvent) => void;
+}
 
 export interface ServerToClientEvents {
   edit: (data: EditEvent) => void;
   remove: (data: RemoveEvent) => void;
+  userChange: (data: UserChangeEvent) => void;
+  userRemove: (data: UserRemoveEvent) => void;
 }
 
 export interface ClientToServerEvents {
@@ -25,9 +32,20 @@ export interface ClientToServerEvents {
   doText: (data: DoTextEvent, callback: StartAck) => void;
   undo: (data: UndoEvent) => void;
   redo: (data: RedoEvent) => void;
+  userChange: (data: UserChangeEvent) => void;
 }
 
 export interface SocketData {
+  username: Username;
+}
+
+export interface UserChangeEvent {
+  username: Username;
+  color?: Color;
+  position?: CanvasCoordinateSet;
+}
+
+export interface UserRemoveEvent {
   username: Username;
 }
 
@@ -35,8 +53,8 @@ export type StartAck = (commandId: CommandId) => void;
 
 export interface StartDrawEvent {
   position: CanvasCoordinateSet;
-  stroke: HexColorString;
-  fill: FillString;
+  stroke: ColorString;
+  fill: ColorString;
   strokeWidth: StrokeWidth;
   username: Username;
 }
@@ -76,11 +94,11 @@ export interface StartTextEvent {
 }
 
 export interface DoTextEvent {
-  content: string;
   commandId: CommandId;
+  content: string;
 }
 
-export interface StartSuccess {
+export interface StartSuccessEvent {
   commandId: CommandId;
   username: Username;
 }
