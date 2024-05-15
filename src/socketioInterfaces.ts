@@ -1,17 +1,24 @@
 import type {
-  CanvasCoordinate,
-  HexColorString,
-  FillString,
+  CanvasCoordinateSet,
+  ColorString,
   StrokeWidth,
   CommandId,
   Threshold,
   Username,
   SvgString,
+  Color,
 } from "./types";
+
+export interface InitServerToClientEvents {
+  userChange: (data: UserChange) => void;
+  userRemove: (data: UserRemove) => void;
+}
 
 export interface ServerToClientEvents {
   edit: (data: Edit) => void;
   remove: (data: Remove) => void;
+  userChange: (data: UserChange) => void;
+  userRemove: (data: UserRemove) => void;
 }
 
 export interface ClientToServerEvents {
@@ -23,48 +30,59 @@ export interface ClientToServerEvents {
   doMove: (data: DoMove) => void;
   undo: (data: Undo) => void;
   redo: (data: Redo) => void;
+  userChange: (data: UserChange) => void;
 }
 
 export interface SocketData {
   username: Username;
 }
 
+export interface UserChange {
+  username: Username;
+  color?: Color;
+  position?: CanvasCoordinateSet;
+}
+
+export interface UserRemove {
+  username: Username;
+}
+
 export type StartAck = (commandId: CommandId) => void;
 
 export interface StartDraw {
-  coordinate: CanvasCoordinate;
-  stroke: HexColorString;
-  fill: FillString;
+  coordinate: CanvasCoordinateSet;
+  stroke: ColorString;
+  fill: ColorString;
   strokeWidth: StrokeWidth;
   username: Username;
 }
 
 export interface DoDraw {
-  coordinate: CanvasCoordinate;
+  coordinate: CanvasCoordinateSet;
   commandId: CommandId;
 }
 
 export interface StartErase {
-  coordinate: CanvasCoordinate;
+  coordinate: CanvasCoordinateSet;
   commandIdsUnderCursor: CommandId[];
   threshold: Threshold;
   username: Username;
 }
 
 export interface DoErase {
-  coordinate: CanvasCoordinate;
+  coordinate: CanvasCoordinateSet;
   commandIdsUnderCursor: CommandId[];
   commandId: CommandId;
 }
 
 export interface StartMove {
   movedCommandId: CommandId;
-  offset: CanvasCoordinate;
+  offset: CanvasCoordinateSet;
   username: Username;
 }
 
 export interface DoMove {
-  offset: CanvasCoordinate;
+  offset: CanvasCoordinateSet;
   commandId: CommandId;
 }
 
@@ -83,7 +101,7 @@ export interface Redo {
 
 export interface Edit {
   svgString?: SvgString;
-  placement?: CanvasCoordinate;
+  placement?: CanvasCoordinateSet;
   commandId: CommandId;
 }
 
