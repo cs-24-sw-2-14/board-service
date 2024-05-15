@@ -104,18 +104,18 @@ export class Board {
   }
 
   getCommandStack(socket: Socket | Namespace) {
-    for (const command of this.controller.stack) {
-      if (!command[1].display) return;
-      command[1].execute(socket);
+    for (const [_, command] of this.controller.stack) {
+      if (!command.display) continue;
+      command.execute(socket);
     }
   }
 
   getUsers(socket: Socket | Namespace) {
-    for (const user of this.users) {
+    for (const [username, user] of this.users) {
       socket.emit("userChange", {
-        username: user[0],
-        color: user[1].color,
-        position: user[1].position,
+        username: username,
+        color: user.color,
+        position: user.position,
       });
     }
   }
