@@ -1,5 +1,5 @@
-import { Namespace } from "socket.io";
-import { Command, CommandId, Username, CanvasCoordinate } from "../types";
+import { Namespace, Socket } from "socket.io";
+import { Command, CommandId, Username, CanvasCoordinateSet } from "../types";
 import { DrawCommand } from "./draw";
 
 /**
@@ -14,14 +14,14 @@ import { DrawCommand } from "./draw";
 export class MoveCommand implements Command {
   commandId: CommandId;
   owner: Username;
-  movedOffset: CanvasCoordinate;
-  oldCoordinate: CanvasCoordinate;
+  movedOffset: CanvasCoordinateSet;
+  oldCoordinate: CanvasCoordinateSet;
   movedCommand: DrawCommand;
   display: Boolean;
   constructor(
     commandId: CommandId,
     owner: Username,
-    movedOffset: CanvasCoordinate,
+    movedOffset: CanvasCoordinateSet,
     movedCommand: DrawCommand,
   ) {
     this.commandId = commandId;
@@ -31,18 +31,18 @@ export class MoveCommand implements Command {
     this.movedCommand = movedCommand;
     this.display = true;
   }
-  execute(socket: Namespace) {
+  execute(socket: Namespace | Socket) {
     this.movedCommand.offset = {
       x: this.oldCoordinate.x + this.movedOffset.x,
       y: this.oldCoordinate.y + this.movedOffset.y,
     };
     this.movedCommand.execute(socket);
   }
-  undo(socket: Namespace) {
+  undo(socket: Namespace | Socket) {
     this.movedCommand.offset = this.oldCoordinate;
     this.movedCommand.execute(socket);
   }
-  redo(socket: Namespace) {
+  redo(socket: Namespace | Socket) {
     this.execute(socket);
   }
 }
