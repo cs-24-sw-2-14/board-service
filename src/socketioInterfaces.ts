@@ -21,6 +21,8 @@ export interface ClientToServerEvents {
   doErase: (data: DoEraseEvent) => void;
   startMove: (data: StartMoveEvent, callback: StartAck) => void;
   doMove: (data: DoMoveEvent) => void;
+  startText: (data: StartTextEvent, callback: StartAck) => void;
+  doText: (data: DoTextEvent, callback: StartAck) => void;
   undo: (data: UndoEvent) => void;
   redo: (data: RedoEvent) => void;
 }
@@ -65,6 +67,16 @@ export interface StartMoveEvent {
 
 export interface DoMoveEvent {
   position: CanvasCoordinateSet;
+  commandId: CommandId;
+}
+
+export interface StartTextEvent {
+  position: CanvasCoordinateSet;
+  username: Username;
+}
+
+export interface DoTextEvent {
+  content: string;
   commandId: CommandId;
 }
 

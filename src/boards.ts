@@ -1,6 +1,7 @@
 import { Server, Namespace } from "socket.io";
 import { DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
+import { CommandController } from "./commandController";
 import { MoveCommand } from "./commands/move";
 import { User, BoardId, CommandId, Username } from "./types";
 import {
@@ -15,9 +16,9 @@ import {
   ServerToClientEvents,
   SocketData,
   RedoEvent,
-  UndoEvent,
+  UndoEvent, DoTextEvent, StartTextEvent,
 } from "./socketioInterfaces";
-import { CommandController } from "./commandController";
+import { TextCommand, Text } from "./commands/text";
 
 /**
  * Represents a Board, keeping track of its users and commands.
@@ -60,6 +61,8 @@ export class Board {
       socket.on("doDraw", this.handleDoDraw.bind(this));
       socket.on("startErase", this.handleStartErase.bind(this));
       socket.on("doErase", this.handleDoErase.bind(this));
+      socket.on("startText", this.handleStartText.bind(this));
+      socket.on("doText", this.handleDoText.bind(this));
       socket.on("startMove", this.handleStartMove.bind(this));
       socket.on("doMove", this.handleDoMove.bind(this));
       socket.on("undo", this.handleUndo.bind(this));
@@ -153,6 +156,25 @@ export class Board {
     );
     this.controller.execute(command, data.username);
     callback(command.commandId);
+  }
+  handleStartText(data: StartTextEvent, callback: StartAck) {
+    const text = new Text(
+      data.position,
+      ""
+    );
+    const command = new TextCommand(this.currentCommandId++, text, data.username);
+
+    this.controller.execute(command, data.username);
+    callback(command.commandId);
+  }
+
+  handleDoText(data: DoTextEvent) {
+    if (!this.controller.stack.has(data.commandId)) return;
+    const textCommand = this.controller.stack.get(
+        data.commandId,
+    )! as TextCommand;
+    textCommand.text.content = data.content;
+    textCommand.execute(this.namespace);
   }
 
   /**
