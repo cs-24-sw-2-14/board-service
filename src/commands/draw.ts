@@ -1,10 +1,9 @@
-import { Namespace } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import {
   Command,
-  CanvasCoordinate,
+  CanvasCoordinateSet,
   CommandId,
-  HexColorString,
-  FillString,
+  ColorString,
   StrokeWidth,
   Threshold,
   SvgString,
@@ -19,10 +18,10 @@ import { calculateDistance } from "../utils";
  * @param display - Indicates whether the coordinate should be displayed when rendered
  */
 export class PathNode {
-  coordinate: CanvasCoordinate;
+  coordinate: CanvasCoordinateSet;
   next: PathNode | null;
   display: boolean;
-  constructor(coordinate: CanvasCoordinate) {
+  constructor(coordinate: CanvasCoordinateSet) {
     this.coordinate = coordinate;
     this.display = true;
     this.next = null;
@@ -44,7 +43,7 @@ class DrawPath {
    * Adds a coordinate as pathNode to the linked list
    * @param coordinate - The new coordinate to be added
    */
-  add(coordinate: CanvasCoordinate) {
+  add(coordinate: CanvasCoordinateSet) {
     let newNode = new PathNode(coordinate);
     if (this.head === null) {
       this.head = newNode;
@@ -62,7 +61,7 @@ class DrawPath {
    * @param threshold - The radius of the erased 'circle'
    */
   eraseFromCoordinate(
-    coordinate: CanvasCoordinate,
+    coordinate: CanvasCoordinateSet,
     threshold: Threshold,
   ): PathNode[] {
     let erasedCoordinates = [];
@@ -119,13 +118,13 @@ class DrawPath {
  */
 class Drawing {
   path: DrawPath;
-  stroke: HexColorString;
-  fill: FillString;
+  stroke: ColorString;
+  fill: ColorString;
   strokeWidth: StrokeWidth;
   constructor(
-    initCoordinate: CanvasCoordinate,
-    stroke: HexColorString,
-    fill: FillString,
+    initCoordinate: CanvasCoordinateSet,
+    stroke: ColorString,
+    fill: ColorString,
     strokeWidth: StrokeWidth,
   ) {
     this.path = new DrawPath();
@@ -158,14 +157,14 @@ class Drawing {
 export class DrawCommand extends Drawing implements Command {
   commandId: CommandId;
   owner: Username;
-  offset: CanvasCoordinate;
+  offset: CanvasCoordinateSet;
   display: Boolean;
   constructor(
     commandId: CommandId,
     owner: Username,
-    initCoordinate: CanvasCoordinate,
-    stroke: HexColorString,
-    fill: FillString,
+    initCoordinate: CanvasCoordinateSet,
+    stroke: ColorString,
+    fill: ColorString,
     strokeWidth: StrokeWidth,
   ) {
     super(initCoordinate, stroke, fill, strokeWidth);
@@ -178,7 +177,7 @@ export class DrawCommand extends Drawing implements Command {
    * Executes the DrawCommand, sending the changes to the clients
    * @param socket - namespace to send events on
    */
-  execute(socket: Namespace) {
+  execute(socket: Namespace | Socket) {
     socket.emit("edit", {
       svgString: this.stringify(),
       placement: this.offset,
@@ -189,7 +188,7 @@ export class DrawCommand extends Drawing implements Command {
    * Undos the DrawCommand by removing it from the clients
    * @param socket - namespace to send events on
    */
-  undo(socket: Namespace) {
+  undo(socket: Namespace | Socket) {
     socket.emit("remove", {
       commandId: this.commandId,
     });
@@ -198,7 +197,7 @@ export class DrawCommand extends Drawing implements Command {
    * Redos the DrawCommand by invoking execute function
    * @param socket - namespace to send events on
    */
-  redo(socket: Namespace) {
+  redo(socket: Namespace | Socket) {
     this.execute(socket);
   }
 }
