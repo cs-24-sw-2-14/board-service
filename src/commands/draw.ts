@@ -92,11 +92,9 @@ class DrawPath {
     while (curr?.next !== null) {
       if (curr.display) {
         if (curr.next.display) {
-          pathString =
-            `L${curr.position.x},${curr.position.y}` + pathString;
+          pathString = `L${curr.position.x},${curr.position.y}` + pathString;
         } else {
-          pathString =
-            `M${curr.position.x},${curr.position.y}` + pathString;
+          pathString = `M${curr.position.x},${curr.position.y}` + pathString;
         }
       }
       curr = curr.next;
@@ -157,7 +155,7 @@ class Drawing {
 export class DrawCommand extends Drawing implements Command {
   commandId: CommandId;
   owner: Username;
-  offset: CanvasCoordinateSet;
+  position: CanvasCoordinateSet;
   display: Boolean;
   constructor(
     commandId: CommandId,
@@ -180,7 +178,7 @@ export class DrawCommand extends Drawing implements Command {
   execute(socket: Namespace | Socket) {
     socket.emit("edit", {
       svgString: this.stringify(),
-      position: this.offset,
+      position: this.position,
       commandId: this.commandId,
     });
   }
