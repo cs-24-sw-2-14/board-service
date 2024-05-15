@@ -1,4 +1,4 @@
-import { Server, Namespace } from "socket.io";
+import { Server, Namespace, Socket } from "socket.io";
 import { DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
 import { MoveCommand } from "./commands/move";
@@ -16,6 +16,8 @@ import {
   SocketData,
   Redo,
   Undo,
+  UserChange,
+  InitServerToClientEvents,
 } from "./socketioInterfaces";
 import { CommandController } from "./commandController";
 
@@ -32,12 +34,14 @@ import { CommandController } from "./commandController";
 export class Board {
   boardId: BoardId;
   namespace: Namespace<ClientToServerEvents, ServerToClientEvents, SocketData>;
+  initNamespace: Namespace<InitServerToClientEvents>;
   users: Map<Username, User>;
   currentCommandId: CommandId;
   controller: CommandController;
   constructor(socketio: Server, boardID: string) {
     this.boardId = boardID;
     this.namespace = socketio.of("/" + this.boardId);
+    this.initNamespace = socketio.of("/" + this.boardId + "_init");
     this.users = new Map();
     this.currentCommandId = 0;
     this.controller = new CommandController(this.namespace);
@@ -45,14 +49,33 @@ export class Board {
     // Register middleware to perform 'authentication' on every incoming connection.
     this.namespace.use((socket, next) => {
       const username = socket.handshake.auth.username;
+      const color = socket.handshake.auth.color;
       if (this.users.has(username)) {
         next(new Error("Username Already Taken"));
-      } else {
-        this.users.set(username, { name: username });
-        socket.data.username = username;
-        next();
       }
+      for (const user of this.users) {
+        if (user[1].color === color) {
+          next(new Error("Color Already Taken"));
+        }
+      }
+      this.users.set(username, {
+        name: username,
+        color: color,
+        position: { x: 0, y: 0 },
+      });
+
+      this.namespace.emit("userChange", {
+        username: username,
+        color: color,
+        position: { x: 0, y: 0 },
+      });
+
+      socket.data.username = username;
+      next();
     });
+
+    // If connection is successful, bind functions to events
+    this.initNamespace.on("connection", (socket) => this.getUsers(socket));
 
     // If connection is successful, bind functions to events
     this.namespace.on("connection", (socket) => {
@@ -64,11 +87,37 @@ export class Board {
       socket.on("doMove", this.handleDoMove.bind(this));
       socket.on("undo", this.handleUndo.bind(this));
       socket.on("redo", this.handleRedo.bind(this));
+      socket.on("userChange", this.handleUserChange.bind(this));
+      this.getCommandStack(socket);
       socket.on("disconnect", () => {
         // remove the user from the hashmap when they disconnect
         this.users.delete(socket.data.username);
+        // send changes to clients
+        this.namespace.emit("userRemove", {
+          username: socket.data.username,
+        });
+        this.initNamespace.emit("userRemove", {
+          username: socket.data.username,
+        });
       });
     });
+  }
+
+  getCommandStack(socket: Socket | Namespace) {
+    for (const command of this.controller.stack) {
+      if (!command[1].display) return;
+      command[1].execute(socket);
+    }
+  }
+
+  getUsers(socket: Socket | Namespace) {
+    for (const user of this.users) {
+      socket.emit("userChange", {
+        username: user[0],
+        color: user[1].color,
+        position: user[1].position,
+      });
+    }
   }
 
   /**
@@ -182,6 +231,19 @@ export class Board {
    */
   handleRedo(data: Redo) {
     this.controller.redo(data.username);
+  }
+
+  /**
+   * Updates the users on the board and sends changes to clients
+   * @param data, of interface UserChange
+   */
+  handleUserChange(data: UserChange) {
+    if (!this.users.has(data.username)) return;
+    const user = this.users.get(data.username);
+    user!.color = data.color ?? user!.color;
+    user!.position = data.position ?? user!.position;
+    this.namespace.emit("userChange", data);
+    this.initNamespace.emit("userChange", data);
   }
 }
 
