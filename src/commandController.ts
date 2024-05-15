@@ -40,7 +40,6 @@ export class CommandController {
    * @param username - user which undoes
    */
   undo(username: Username) {
-    console.log("undo", username);
     if (this.stack.size === 0) return;
     let latestCommand: Command | null = null;
     for (const [_, command] of this.stack) {
@@ -57,7 +56,6 @@ export class CommandController {
    * @param username - user which redoes
    */
   redo(username: string) {
-    console.log("redo", username);
     if (this.stack.size === 0) return;
     for (const [_, command] of this.stack) {
       if (command.owner !== username || command.display) continue;
