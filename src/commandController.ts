@@ -2,6 +2,7 @@ import { Namespace } from "socket.io";
 import { Command, CommandId, Username } from "./types";
 import { DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
+import { TextCommand } from "./commands/text";
 import { MoveCommand } from "./commands/move";
 
 /**
@@ -10,7 +11,7 @@ import { MoveCommand } from "./commands/move";
  * @param namespace - namespace instance of socketio, used to send events
  */
 export class CommandController {
-  stack: Map<CommandId, DrawCommand | EraseCommand | MoveCommand>;
+  stack: Map<CommandId, DrawCommand | EraseCommand | MoveCommand | TextCommand>;
   namespace: Namespace;
   constructor(namespace: Namespace) {
     this.stack = new Map();
@@ -23,7 +24,7 @@ export class CommandController {
    * @param username - user which executes the command
    */
   execute(
-    command: DrawCommand | EraseCommand | MoveCommand,
+    command: DrawCommand | EraseCommand | MoveCommand | TextCommand,
     username: Username,
   ) {
     for (const [commandId, command] of this.stack) {

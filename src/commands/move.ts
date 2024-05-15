@@ -27,19 +27,19 @@ export class MoveCommand implements Command {
     this.commandId = commandId;
     this.owner = owner;
     this.movedOffset = movedOffset ?? { x: 0, y: 0 };
-    this.oldCoordinate = movedCommand.offset;
+    this.oldCoordinate = movedCommand.position;
     this.movedCommand = movedCommand;
     this.display = true;
   }
   execute(socket: Namespace | Socket) {
-    this.movedCommand.offset = {
+    this.movedCommand.position = {
       x: this.oldCoordinate.x + this.movedOffset.x,
       y: this.oldCoordinate.y + this.movedOffset.y,
     };
     this.movedCommand.execute(socket);
   }
   undo(socket: Namespace | Socket) {
-    this.movedCommand.offset = this.oldCoordinate;
+    this.movedCommand.position = this.oldCoordinate;
     this.movedCommand.execute(socket);
   }
   redo(socket: Namespace | Socket) {

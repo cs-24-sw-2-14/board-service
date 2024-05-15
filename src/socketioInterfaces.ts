@@ -28,6 +28,8 @@ export interface ClientToServerEvents {
   doErase: (data: DoErase) => void;
   startMove: (data: StartMove, callback: StartAck) => void;
   doMove: (data: DoMove) => void;
+  startText: (data: StartTextEvent, callback: StartAck) => void;
+  doText: (data: DoTextEvent, callback: StartAck) => void;
   undo: (data: Undo) => void;
   redo: (data: Redo) => void;
   userChange: (data: UserChange) => void;
@@ -50,61 +52,69 @@ export interface UserRemove {
 export type StartAck = (commandId: CommandId) => void;
 
 export interface StartDraw {
-  coordinate: CanvasCoordinateSet;
+  position: CanvasCoordinateSet;
   stroke: ColorString;
   fill: ColorString;
   strokeWidth: StrokeWidth;
   username: Username;
 }
 
-export interface DoDraw {
-  coordinate: CanvasCoordinateSet;
+export interface DoDrawEvent {
+  position: CanvasCoordinateSet;
   commandId: CommandId;
 }
 
-export interface StartErase {
-  coordinate: CanvasCoordinateSet;
+export interface StartEraseEvent {
+  position: CanvasCoordinateSet;
   commandIdsUnderCursor: CommandId[];
   threshold: Threshold;
   username: Username;
 }
 
-export interface DoErase {
-  coordinate: CanvasCoordinateSet;
+export interface DoEraseEvent {
+  position: CanvasCoordinateSet;
   commandIdsUnderCursor: CommandId[];
   commandId: CommandId;
 }
 
-export interface StartMove {
+export interface StartMoveEvent {
   movedCommandId: CommandId;
-  offset: CanvasCoordinateSet;
+  position: CanvasCoordinateSet;
   username: Username;
 }
 
-export interface DoMove {
-  offset: CanvasCoordinateSet;
+export interface DoMoveEvent {
+  position: CanvasCoordinateSet;
   commandId: CommandId;
 }
+
+export interface StartTextEvent {
+  position: CanvasCoordinateSet;
+  username: Username;
+}
+
+export interface DoTextEvent {
+  content: string;
 
 export interface StartSuccess {
   commandId: CommandId;
   username: Username;
 }
 
-export interface Undo {
+export interface UndoEvent {
   username: Username;
 }
 
-export interface Redo {
+export interface RedoEvent {
   username: Username;
 }
 
-export interface Edit {
+export interface EditEvent {
   svgString?: SvgString;
-  placement?: CanvasCoordinateSet;
+  position?: CanvasCoordinateSet;
   commandId: CommandId;
 }
 
-export interface Remove {
+export interface RemoveEvent {
   commandId: CommandId;
 }

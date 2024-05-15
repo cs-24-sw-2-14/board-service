@@ -20,6 +20,23 @@ import {
   InitServerToClientEvents,
 } from "./socketioInterfaces";
 import { CommandController } from "./commandController";
+import { MoveCommand } from "./commands/move";
+import { User, BoardId, CommandId, Username } from "./types";
+import {
+  StartAck,
+  StartDrawEvent,
+  DoDrawEvent,
+  StartEraseEvent,
+  DoEraseEvent,
+  StartMoveEvent,
+  DoMoveEvent,
+  ClientToServerEvents,
+  ServerToClientEvents,
+  SocketData,
+  RedoEvent,
+  UndoEvent, DoTextEvent, StartTextEvent,
+} from "./socketioInterfaces";
+import { TextCommand, Text } from "./commands/text";
 
 /**
  * Represents a Board, keeping track of its users and commands.
@@ -83,6 +100,8 @@ export class Board {
       socket.on("doDraw", this.handleDoDraw.bind(this));
       socket.on("startErase", this.handleStartErase.bind(this));
       socket.on("doErase", this.handleDoErase.bind(this));
+      socket.on("startText", this.handleStartText.bind(this));
+      socket.on("doText", this.handleDoText.bind(this));
       socket.on("startMove", this.handleStartMove.bind(this));
       socket.on("doMove", this.handleDoMove.bind(this));
       socket.on("undo", this.handleUndo.bind(this));
@@ -126,11 +145,11 @@ export class Board {
    * @param data, of interface StartDraw
    * @param callback, of interface StartAck
    */
-  handleStartDraw(data: StartDraw, callback: StartAck) {
+  handleStartDraw(data: StartDrawEvent, callback: StartAck) {
     const command = new DrawCommand(
       this.currentCommandId++,
       data.username,
-      data.coordinate,
+      data.position,
       data.stroke,
       data.fill,
       data.strokeWidth,
@@ -143,12 +162,12 @@ export class Board {
    * Edits a DrawCommand, and executes it, to send changes to clients
    * @param data, of interface DoDraw
    */
-  handleDoDraw(data: DoDraw) {
+  handleDoDraw(data: DoDrawEvent) {
     const drawCommand = this.controller.stack.get(
       data.commandId,
     ) as DrawCommand;
     if (!drawCommand) return;
-    drawCommand.path.add(data.coordinate);
+    drawCommand.path.add(data.position);
     drawCommand.execute(this.namespace);
   }
 
@@ -158,7 +177,7 @@ export class Board {
    * @param data, of interface StartErase
    * @param callback, of interface StartAck
    */
-  handleStartErase(data: StartErase, callback: StartAck) {
+  handleStartErase(data: StartEraseEvent, callback: StartAck) {
     const command = new EraseCommand(
       this.currentCommandId++,
       data.username,
@@ -166,7 +185,7 @@ export class Board {
       this.controller.stack,
     );
 
-    command.eraseFromDrawCommands(data.commandIdsUnderCursor, data.coordinate);
+    command.eraseFromDrawCommands(data.commandIdsUnderCursor, data.position);
 
     this.controller.execute(command, data.username);
     callback(command.commandId);
@@ -176,13 +195,13 @@ export class Board {
    * Edits a EraseCommand, and executes it, to send changes to clients
    * @param data, of interface DoErase
    */
-  handleDoErase(data: DoErase) {
+  handleDoErase(data: DoEraseEvent) {
     const eraseCommand = this.controller.stack.get(
       data.commandId,
     ) as EraseCommand;
     eraseCommand.eraseFromDrawCommands(
       data.commandIdsUnderCursor,
-      data.coordinate,
+      data.position,
     );
     eraseCommand.execute(this.namespace);
   }
@@ -193,27 +212,46 @@ export class Board {
    * @param data, of interface StartMove
    * @param callback, of interface StartAck
    */
-  handleStartMove(data: StartMove, callback: StartAck) {
+  handleStartMove(data: StartMoveEvent, callback: StartAck) {
     const command = new MoveCommand(
       this.currentCommandId++,
       data.username,
-      data.offset,
+      data.position,
       this.controller.stack.get(data.movedCommandId) as DrawCommand,
     );
     this.controller.execute(command, data.username);
     callback(command.commandId);
+  }
+  handleStartText(data: StartTextEvent, callback: StartAck) {
+    const text = new Text(
+      data.position,
+      ""
+    );
+    const command = new TextCommand(this.currentCommandId++, text, data.username);
+
+    this.controller.execute(command, data.username);
+    callback(command.commandId);
+  }
+
+  handleDoText(data: DoTextEvent) {
+    if (!this.controller.stack.has(data.commandId)) return;
+    const textCommand = this.controller.stack.get(
+        data.commandId,
+    )! as TextCommand;
+    textCommand.text.content = data.content;
+    textCommand.execute(this.namespace);
   }
 
   /**
    * Edits a MoveCommand, and executes it, to send changes to clients
    * @param data, of interface DoMove
    */
-  handleDoMove(data: DoMove) {
+  handleDoMove(data: DoMoveEvent) {
     if (!this.controller.stack.get(data.commandId)) return;
     const moveCommand = this.controller.stack.get(
       data.commandId,
     )! as MoveCommand;
-    moveCommand.movedOffset = data.offset;
+    moveCommand.movedOffset = data.position;
     moveCommand.execute(this.namespace);
   }
 
@@ -221,7 +259,7 @@ export class Board {
    * Executes the undo action for the given user
    * @param data, of interface Undo
    */
-  handleUndo(data: Undo) {
+  handleUndo(data: UndoEvent) {
     this.controller.undo(data.username);
   }
 
