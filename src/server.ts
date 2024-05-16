@@ -29,13 +29,13 @@ app.post("/v1/board/create", (_, res: Response) => {
   return;
 });
 
-app.post("/v1/board/validateBoardId", (req: Request, res: Response) => {
-  const body = req.body;
-  if (!boards.boards.has(body.boardId)) {
-    res.status(404).send("Board does not exist");
+app.get("/v1/board/exists", (req: Request, res: Response) => {
+  if (!req.params.board_id){
+    res.status(400).send("Missing parameter: board_id")
     return;
   }
-  res.status(200).send("Board is valid");
+
+  res.status(200).send(boards.boards.has(req.params.board_id));
   return;
 });
 
