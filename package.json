@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "dev": "npx ts-node ./src/server.ts",
+    "inspect": "npx --node-options=--inspect ts-node ./src/server.ts"
   },
   "keywords": [],
   "author": "",
