@@ -8,6 +8,7 @@ info:
 
 servers:
   - url: http://64.227.121.226
+  - url: http://127.0.0.1:5123
 
 tags:
   - name: Board
