@@ -156,7 +156,7 @@ export class DrawCommand extends Drawing implements Command {
   commandId: CommandId;
   owner: Username;
   position: CanvasCoordinateSet;
-  display: Boolean;
+  done: Boolean;
   constructor(
     commandId: CommandId,
     owner: Username,
@@ -169,7 +169,7 @@ export class DrawCommand extends Drawing implements Command {
     this.commandId = commandId;
     this.owner = owner;
     this.position = { x: 0, y: 0 };
-    this.display = true;
+    this.done = true;
   }
   /**
    * Executes the DrawCommand, sending the changes to the clients

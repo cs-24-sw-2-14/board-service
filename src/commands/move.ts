@@ -17,7 +17,7 @@ export class MoveCommand implements Command {
   movedOffset: CanvasCoordinateSet;
   oldCoordinate: CanvasCoordinateSet;
   movedCommand: DrawCommand;
-  display: Boolean;
+  done: Boolean;
   constructor(
     commandId: CommandId,
     owner: Username,
@@ -29,7 +29,7 @@ export class MoveCommand implements Command {
     this.movedOffset = movedOffset ?? { x: 0, y: 0 };
     this.oldCoordinate = movedCommand.position;
     this.movedCommand = movedCommand;
-    this.display = true;
+    this.done = true;
   }
   execute(socket: Namespace | Socket) {
     this.movedCommand.position = {
