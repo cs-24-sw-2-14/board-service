@@ -30,6 +30,7 @@ export interface ClientToServerEvents {
   doMove: (data: DoMoveEvent) => void;
   startText: (data: StartTextEvent, callback: StartAck) => void;
   doText: (data: DoTextEvent, callback: StartAck) => void;
+  stop: (data: StopEvent) => void;
   undo: (data: UndoEvent) => void;
   redo: (data: RedoEvent) => void;
   userChange: (data: UserChangeEvent) => void;
@@ -37,6 +38,10 @@ export interface ClientToServerEvents {
 
 export interface SocketData {
   username: Username;
+}
+
+export interface StopEvent {
+  commandId: CommandId;
 }
 
 export interface UserChangeEvent {
