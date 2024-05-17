@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 var cors = require("cors");
 import { Server } from "socket.io";
 import { Boards } from "./boards";
-import { BoardId, Color, Username } from "./types";
+import { BoardId, Username } from "./types";
 const PORT = 5123;
 
 var corsOptions = {
@@ -21,10 +21,6 @@ const socketio = new Server(server, {
 });
 let boards: Boards = new Boards(socketio);
 
-/**
- * Creates a new board
- * @returns boardId - The unique id identifying the new board created
- */
 app.post("/v1/board/create", (_, res: Response) => {
   res.send({ boardId: boards.createBoard() });
   return;
