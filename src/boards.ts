@@ -107,7 +107,7 @@ export class Board {
   getCommandStack(socket: Socket | Namespace) {
     for (const [_, command] of this.controller.stack) {
       if (!command.done) continue;
-      command.execute(socket);
+      command.execute(socket, false);
     }
   }
 
@@ -163,7 +163,7 @@ export class Board {
     ) as DrawCommand;
     if (!drawCommand) return;
     drawCommand.path.add(data.position);
-    drawCommand.execute(this.namespace);
+    drawCommand.execute(this.namespace, true);
   }
 
   /**
@@ -198,7 +198,7 @@ export class Board {
       data.commandIdsUnderCursor,
       data.position,
     );
-    eraseCommand.execute(this.namespace);
+    eraseCommand.execute(this.namespace, true);
   }
 
   /**
@@ -235,7 +235,7 @@ export class Board {
       data.commandId,
     )! as TextCommand;
     textCommand.text.content = data.content;
-    textCommand.execute(this.namespace);
+    textCommand.execute(this.namespace, true);
   }
 
   /**
@@ -248,7 +248,7 @@ export class Board {
       data.commandId,
     )! as MoveCommand;
     moveCommand.movedOffset = data.position;
-    moveCommand.execute(this.namespace);
+    moveCommand.execute(this.namespace, true);
   }
 
   /**
