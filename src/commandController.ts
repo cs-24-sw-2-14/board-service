@@ -21,7 +21,6 @@ export class CommandController {
   /**
    * Executes a command, adding in to the stack. Removes all undone elements belonging to user
    * @param newCommand - Command to be executed
-   * @param username - user which executes the command
    */
   execute(newCommand: DrawCommand | EraseCommand | MoveCommand | TextCommand) {
     for (const [commandId, command] of this.stack) {
