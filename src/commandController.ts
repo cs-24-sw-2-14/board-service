@@ -31,7 +31,7 @@ export class CommandController {
       if (command.owner !== username || command.done) continue;
       this.stack.delete(commandId);
     }
-    command.execute(this.namespace);
+    command.execute(this.namespace, false);
     this.stack.set(command.commandId, command);
   }
 
@@ -48,7 +48,7 @@ export class CommandController {
     }
     if (latestCommand === null) return;
     latestCommand.done = false;
-    latestCommand.undo(this.namespace);
+    latestCommand.undo(this.namespace, false);
   }
 
   /**
@@ -60,7 +60,7 @@ export class CommandController {
     for (const [_, command] of this.stack) {
       if (command.owner !== username || command.done) continue;
       command.done = true;
-      command.redo(this.namespace);
+      command.redo(this.namespace, false);
       break;
     }
   }
