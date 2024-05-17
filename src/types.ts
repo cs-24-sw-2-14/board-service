@@ -39,7 +39,7 @@ export interface Command {
   commandId: CommandId;
   owner: Username;
   done: Boolean;
-  execute: (socket: Namespace | Socket) => void;
-  undo: (socket: Namespace | Socket) => void;
-  redo: (socket: Namespace | Socket) => void;
+  execute: (socket: Namespace | Socket, isVolatile: boolean) => void;
+  undo: (socket: Namespace | Socket, isVolatile: boolean) => void;
+  redo: (socket: Namespace | Socket, isVolatile: boolean) => void;
 }
