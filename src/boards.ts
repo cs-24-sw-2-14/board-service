@@ -21,6 +21,7 @@ import {
   UndoEvent,
   DoTextEvent,
   StartTextEvent,
+  StopEvent,
 } from "./socketioInterfaces";
 import { TextCommand, Text } from "./commands/text";
 
@@ -84,6 +85,7 @@ export class Board {
       socket.on("doText", this.handleDoText.bind(this));
       socket.on("startMove", this.handleStartMove.bind(this));
       socket.on("doMove", this.handleDoMove.bind(this));
+      socket.on("stop", this.handleStop.bind(this));
       socket.on("undo", this.handleUndo.bind(this));
       socket.on("redo", this.handleRedo.bind(this));
       socket.on("userChange", this.handleUserChange.bind(this));
@@ -117,6 +119,19 @@ export class Board {
         position: user.position,
       });
     }
+  }
+
+  /**
+   * Runs the execute command of the supplied commandId with the parameter isVolatile to false
+   * This function is meant to be executed when a command is done being updated.
+   * It enables all the other doCommands to be volatile, since this function will be called when done editing
+   * And ensure delivery to all clients
+   * @param data, of interface StopEvent
+   */
+  handleStop(data: StopEvent) {
+    const command = this.controller.stack.get(data.commandId);
+    if (!command) return;
+    command.execute(this.namespace, false);
   }
 
   /**
