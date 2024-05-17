@@ -25,20 +25,22 @@ export class TextCommand implements Command {
     this.text = text;
     this.done = true;
   }
-  execute(socket: Namespace | Socket) {
-    socket.emit("edit", {
+  execute(socket: Namespace | Socket, isVolatile: boolean) {
+    const emitSocket = isVolatile ? socket.volatile : socket;
+    emitSocket.emit("edit", {
       svgString: this.text.stringify(),
       placement: this.text.placement,
       commandId: this.commandId,
     });
   }
-  undo(socket: Namespace | Socket) {
+  undo(socket: Namespace | Socket, isVolatile: boolean) {
     // More sophisticated command behavior ?
-    socket.emit("remove", {
+    const emitSocket = isVolatile ? socket.volatile : socket;
+    emitSocket.emit("remove", {
       commandId: this.commandId,
     });
   }
-  redo(socket: Namespace | Socket) {
-    this.execute(socket);
+  redo(socket: Namespace | Socket, isVolatile: boolean) {
+    this.execute(socket, isVolatile);
   }
 }

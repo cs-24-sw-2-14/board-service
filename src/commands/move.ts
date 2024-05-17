@@ -31,18 +31,18 @@ export class MoveCommand implements Command {
     this.movedCommand = movedCommand;
     this.done = true;
   }
-  execute(socket: Namespace | Socket) {
+  execute(socket: Namespace | Socket, isVolatile: boolean) {
     this.movedCommand.position = {
       x: this.oldCoordinate.x + this.movedOffset.x,
       y: this.oldCoordinate.y + this.movedOffset.y,
     };
-    this.movedCommand.execute(socket);
+    this.movedCommand.execute(socket, isVolatile);
   }
-  undo(socket: Namespace | Socket) {
+  undo(socket: Namespace | Socket, isVolatile: boolean) {
     this.movedCommand.position = this.oldCoordinate;
-    this.movedCommand.execute(socket);
+    this.movedCommand.execute(socket, isVolatile);
   }
-  redo(socket: Namespace | Socket) {
-    this.execute(socket);
+  redo(socket: Namespace | Socket, isVolatile: boolean) {
+    this.execute(socket, isVolatile);
   }
 }

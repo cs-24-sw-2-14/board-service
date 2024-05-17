@@ -70,15 +70,15 @@ export class EraseCommand implements Command {
     }
   }
 
-  execute(socket: Namespace | Socket) {
-    this.update(socket, false);
+  execute(socket: Namespace | Socket, isVolatile: boolean) {
+    this.update(socket, isVolatile, false);
   }
 
-  undo(socket: Namespace | Socket) {
-    this.update(socket, true);
+  undo(socket: Namespace | Socket, isVolatile: boolean) {
+    this.update(socket, isVolatile, true);
   }
-  redo(socket: Namespace | Socket) {
-    this.execute(socket);
+  redo(socket: Namespace | Socket, isVolatile: boolean) {
+    this.execute(socket, isVolatile);
   }
 
   /**
@@ -87,12 +87,12 @@ export class EraseCommand implements Command {
    * @param socket - socketio namespace instance, used to be able to send events
    * @param state - the new display state
    */
-  update(socket: Namespace | Socket, state: boolean) {
+  update(socket: Namespace | Socket, isVolatile: boolean, state: boolean) {
     this.erasedCoordinates.forEach((erasedCoordinate) => {
       erasedCoordinate.display = state;
     });
     this.erasedCommandIds.forEach((drawCommandId) => {
-      this.stack.get(drawCommandId)?.execute(socket);
+      this.stack.get(drawCommandId)?.execute(socket, isVolatile);
     });
   }
 }

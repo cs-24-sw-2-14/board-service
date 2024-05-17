@@ -175,8 +175,9 @@ export class DrawCommand extends Drawing implements Command {
    * Executes the DrawCommand, sending the changes to the clients
    * @param socket - namespace to send events on
    */
-  execute(socket: Namespace | Socket) {
-    socket.emit("edit", {
+  execute(socket: Namespace | Socket, isVolatile: boolean) {
+    const emitSocket = isVolatile ? socket.volatile : socket;
+    emitSocket.emit("edit", {
       svgString: this.stringify(),
       position: this.position,
       commandId: this.commandId,
@@ -186,8 +187,9 @@ export class DrawCommand extends Drawing implements Command {
    * Undos the DrawCommand by removing it from the clients
    * @param socket - namespace to send events on
    */
-  undo(socket: Namespace | Socket) {
-    socket.emit("remove", {
+  undo(socket: Namespace | Socket, isVolatile: boolean) {
+    const emitSocket = isVolatile ? socket.volatile : socket;
+    emitSocket.emit("remove", {
       commandId: this.commandId,
     });
   }
@@ -195,7 +197,7 @@ export class DrawCommand extends Drawing implements Command {
    * Redos the DrawCommand by invoking execute function
    * @param socket - namespace to send events on
    */
-  redo(socket: Namespace | Socket) {
-    this.execute(socket);
+  redo(socket: Namespace | Socket, isVolatile: boolean) {
+    this.execute(socket, isVolatile);
   }
 }
