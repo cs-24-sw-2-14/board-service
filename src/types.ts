@@ -38,7 +38,7 @@ export type CanvasCoordinateSet = CoordinateSet;
 export interface Command {
   commandId: CommandId;
   owner: Username;
-  display: Boolean;
+  done: Boolean;
   execute: (socket: Namespace | Socket) => void;
   undo: (socket: Namespace | Socket) => void;
   redo: (socket: Namespace | Socket) => void;

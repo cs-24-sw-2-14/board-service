@@ -28,7 +28,7 @@ export class CommandController {
     username: Username,
   ) {
     for (const [commandId, command] of this.stack) {
-      if (command.owner !== username || command.display) continue;
+      if (command.owner !== username || command.done) continue;
       this.stack.delete(commandId);
     }
     command.execute(this.namespace);
@@ -43,11 +43,11 @@ export class CommandController {
     if (this.stack.size === 0) return;
     let latestCommand: Command | null = null;
     for (const [_, command] of this.stack) {
-      if (command.owner !== username || !command.display) continue;
+      if (command.owner !== username || !command.done) continue;
       latestCommand = command;
     }
     if (latestCommand === null) return;
-    latestCommand.display = false;
+    latestCommand.done = false;
     latestCommand.undo(this.namespace);
   }
 
@@ -58,8 +58,8 @@ export class CommandController {
   redo(username: string) {
     if (this.stack.size === 0) return;
     for (const [_, command] of this.stack) {
-      if (command.owner !== username || command.display) continue;
-      command.display = true;
+      if (command.owner !== username || command.done) continue;
+      command.done = true;
       command.redo(this.namespace);
       break;
     }

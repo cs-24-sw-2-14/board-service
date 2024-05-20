@@ -25,7 +25,7 @@ export class EraseCommand implements Command {
   erasedCommandIds: CommandId[];
   owner: Username;
   threshold: Threshold;
-  display: Boolean;
+  done: Boolean;
   constructor(
     commandId: CommandId,
     owner: Username,
@@ -38,7 +38,7 @@ export class EraseCommand implements Command {
     this.erasedCommandIds = [];
     this.owner = owner;
     this.threshold = threshold;
-    this.display = true;
+    this.done = true;
   }
 
   /**
@@ -46,24 +46,25 @@ export class EraseCommand implements Command {
    * @param commandIds - array of commandIds to be erased from
    * @param coordinate - coordinate to erase from commands
    */
-  eraseFromDrawCommands(commandIds: CommandId[], coordinate: CanvasCoordinateSet) {
+  eraseFromDrawCommands(
+    commandIds: CommandId[],
+    coordinate: CanvasCoordinateSet,
+  ) {
     let erasedCoordinates: PathNode[] = [];
     commandIds.forEach((commandId) => {
       if (!this.stack.has(commandId)) return;
       if (!this.erasedCommandIds.includes(commandId)) {
         this.erasedCommandIds.push(commandId);
       }
-      let command = this.stack.get(commandId)! as DrawCommand;
-      erasedCoordinates = command.path.eraseFromCoordinate(
+
+      let drawCommand = this.stack.get(commandId)! as DrawCommand;
+      erasedCoordinates = drawCommand.path.eraseFromCoordinate(
         coordinate,
         this.threshold,
       );
     });
     if (erasedCoordinates.length !== 0) {
-      this.erasedCoordinates = this.erasedCoordinates.concat(
-        this.erasedCoordinates,
-        erasedCoordinates,
-      );
+      this.erasedCoordinates = this.erasedCoordinates.concat(erasedCoordinates);
     }
   }
 

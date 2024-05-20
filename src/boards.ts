@@ -104,7 +104,7 @@ export class Board {
 
   getCommandStack(socket: Socket | Namespace) {
     for (const [_, command] of this.controller.stack) {
-      if (!command.display) continue;
+      if (!command.done) continue;
       command.execute(socket);
     }
   }

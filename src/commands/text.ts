@@ -18,12 +18,12 @@ export class TextCommand implements Command {
   commandId: number;
   owner: string;
   text: Text;
-  display: Boolean;
+  done: Boolean;
   constructor(commandId: number, text: Text, owner: string) {
     this.commandId = commandId;
     this.owner = owner;
     this.text = text;
-    this.display = true;
+    this.done = true;
   }
   execute(socket: Namespace | Socket) {
     socket.emit("edit", {
@@ -42,4 +42,3 @@ export class TextCommand implements Command {
     this.execute(socket);
   }
 }
-
