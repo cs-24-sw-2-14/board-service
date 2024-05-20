@@ -7,11 +7,19 @@ info:
   version: "1.0"
 
 servers:
-  - url: http://64.227.121.226
+  - url: http://localhost:5123
+  - url: http://magicboard.kresten.xyz:5123
+  - url: http://magicboard.stjernholm.pw:5123
+  - url: http://magicboard.fagerlund.io:5123
+  - url: http://magicboard.nygaard.cloud:5123
 
 tags:
   - name: Board
     description: Related to boards which includes the functions for creating and managing boards (UID's)
+  - name: User
+    description: Related to users of boards.
+  - name: Color
+    description: Related to colors that are in use in a board.
 
 paths:
   /v1/board/validate_uid:
@@ -67,6 +75,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/board_create_result'
+  
+  /v1/user/exists:
+    get:
+      tags:
+        - User
+      summary: Checks whether a user exists in a board.
+      description: Takes a username and checks whether the username is taken.
+      operationId: checkUsername
+      parameters:
+        - $ref: '#/components/parameters/board_uid'
+        - $ref: '#/components/parameters/username'
+      responses:
+        '200':
+          description: Whether the User exists.
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        '400 Missing BoardID':
+          $ref: '#/components/responses/board_uid_missing'
+        '400 Missing Username':
+          $ref: '#/components/responses/username_missing'
+        '404 Board not found':
+          $ref: '#/components/responses/board_not_found'
+
 
   /v1/board/join:
     get:
@@ -123,4 +157,18 @@ components:
         text/html:
           schema:
             type: string
-            example: <p>board_uid parameter missing.</p>
+            example: "<p>Parameter missing: boardId</p>"
+    username_missing:
+      description: Username was not supplied.
+      content:
+        text/html:
+          schema:
+            type: string
+            example: "<p>Parameter missing: username</p>"
+    board_not_found:
+      description: Provided board does not exist.
+      content:
+        text/html:
+          schema:
+            type: string
+            example: "Board does not exist"
