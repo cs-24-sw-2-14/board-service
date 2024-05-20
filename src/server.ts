@@ -41,7 +41,7 @@ app.get("/v1/board/exists", (req: Request, res: Response) => {
 });
 
 app.get("/v1/user/exists", (req: Request, res: Response) => {
-  const boardId = req.query.boardId as BoardId;
+  const boardId = req.query.board_id as BoardId;
 
   if (boardId === undefined){
     res.status(400).send("<p>Parameter missing: boardId</p>");
@@ -58,7 +58,7 @@ app.get("/v1/user/exists", (req: Request, res: Response) => {
   const board = boards.boards.get(boardId);
 
   if(board === undefined){
-    res.status(400).send("Board does not exist");
+    res.status(404).send("Board does not exist");
     return;
   }
 

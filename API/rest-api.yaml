@@ -30,7 +30,7 @@ paths:
       description: Takes a board UID and validates it.
       operationId: validateUID
       parameters:
-        - $ref: '#/components/parameters/board_uid'
+        - $ref: '#/components/parameters/board_id'
       responses:
         '200':
           description: Whether Board UID is valid.
@@ -40,7 +40,7 @@ paths:
                 type: boolean
                 example: true
         '400':
-          $ref: '#/components/responses/board_uid_missing'
+          $ref: '#/components/responses/board_id_missing'
 
   /v1/board/exists:
     get:
@@ -50,7 +50,7 @@ paths:
       description: Takes a board UID and checks whether the board exists.
       operationId: checkUID
       parameters:
-        - $ref: '#/components/parameters/board_uid'
+        - $ref: '#/components/parameters/board_id'
       responses:
         '200':
           description: Whether the Board exists, based on Board UID.
@@ -60,7 +60,7 @@ paths:
                 type: boolean
                 example: true
         '400':
-          $ref: '#/components/responses/board_uid_missing'
+          $ref: '#/components/responses/board_id_missing'
 
   /v1/board/create:
     post:
@@ -84,7 +84,7 @@ paths:
       description: Takes a username and checks whether the username is taken.
       operationId: checkUsername
       parameters:
-        - $ref: '#/components/parameters/board_uid'
+        - $ref: '#/components/parameters/board_id'
         - $ref: '#/components/parameters/username'
       responses:
         '200':
@@ -95,7 +95,7 @@ paths:
                 type: boolean
                 example: true
         '400 Missing BoardID':
-          $ref: '#/components/responses/board_uid_missing'
+          $ref: '#/components/responses/board_id_missing'
         '400 Missing Username':
           $ref: '#/components/responses/username_missing'
         '404 Board not found':
@@ -109,7 +109,7 @@ paths:
       summary: Get invite to websocket server
       operationId: joinBoard
       parameters:
-        - $ref: '#/components/parameters/board_uid'
+        - $ref: '#/components/parameters/board_id'
       responses:
         '200':
           description: Board joined??
@@ -120,7 +120,7 @@ paths:
 
 components:
   schemas:
-    board_uid:
+    board_id:
       type: string
       minLength: 6
       maxLength: 6
@@ -128,8 +128,8 @@ components:
     board_create_result:
       type: object
       properties:
-        board_uid:
-          $ref: '#/components/schemas/board_uid'
+        board_id:
+          $ref: '#/components/schemas/board_id'
     board_join_result:
       type: object
       properties:
@@ -140,18 +140,28 @@ components:
         port:
           type: integer
           example: 25565
+    username:
+      type: string
+      example: Testersen
 
   parameters:
-    board_uid:
-      name: board_uid
+    board_id:
+      name: board_id
       in: query
       description: UID of a board.
       required: true
       schema:
-        $ref: '#/components/schemas/board_uid'
+        $ref: '#/components/schemas/board_id'
+    username:
+      name: username
+      in: query
+      description: Username of a user on a board.
+      required: true
+      schema:
+        $ref: '#/components/schemas/username'
 
   responses:
-    board_uid_missing:
+    board_id_missing:
       description: Board UID was not supplied.
       content:
         text/html:
