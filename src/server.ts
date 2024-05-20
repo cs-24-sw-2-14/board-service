@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 var cors = require("cors");
 import { Server } from "socket.io";
 import { Boards } from "./boards";
-import { BoardId, Username } from "./types";
+import { BoardId, Color, ColorName, Username } from "./types";
 const PORT = 5123;
 
 var corsOptions = {
@@ -44,7 +44,7 @@ app.get("/v1/user/exists", (req: Request, res: Response) => {
   const boardId = req.query.board_id as BoardId;
 
   if (boardId === undefined){
-    res.status(400).send("<p>Parameter missing: boardId</p>");
+    res.status(400).send("<p>Parameter missing: board_id</p>");
     return;
   }
 
@@ -66,25 +66,37 @@ app.get("/v1/user/exists", (req: Request, res: Response) => {
   return;
 });
 
-app.post("/v1/board/validateColor", (req: Request, res: Response) => {
-  const body = req.body;
-  if (body.boardId === undefined || body.color === undefined) {
-    res.status(400).send("Bad Request: Missing boardId or color");
-    return;
-  }
-  if (!boards.boards.has(body.boardId)) {
-    res.status(400).send("Bad Request: Board does not exist");
-    return;
-  }
-  const board = boards.boards.get(body.boardId)!;
+app.get("/v1/color/exists", (req: Request, res: Response) => {
+  const boardId = req.query.board_id as BoardId;
 
-  for (const user of board.users) {
-    if (user[1].color === body.color) {
-      res.status(409).send("Conflict: Color is Already taken");
+  if (boardId === undefined){
+    res.status(400).send("<p>Parameter missing: board_id</p>");
+    return;
+  }
+
+  const colorstring = req.query.color as string;
+
+  if (colorstring === undefined){
+    res.status(400).send("<p>Parameter missing: color</p>");
+    return;
+  }
+
+  const color = parseInt(colorstring)
+
+  const board = boards.boards.get(boardId);
+
+  if(board === undefined){
+    res.status(404).send("Board does not exist");
+    return;
+  }
+
+  for (const [_, user] of board.users) {
+    if (user.color === color) {
+      res.status(200).send(true);
       return;
     }
   }
-  res.status(200).send("Color is available");
+  res.status(200).send(false);
 });
 
 server.listen(PORT, () => {
