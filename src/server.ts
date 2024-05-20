@@ -31,12 +31,14 @@ app.post("/v1/board/create", (_, res: Response) => {
 });
 
 app.get("/v1/board/exists", (req: Request, res: Response) => {
-  if (!req.params.board_id){
-    res.status(400).send("Missing parameter: board_id")
+  const boardId = req.query.board_id as BoardId;
+
+  if (boardId === undefined){
+    res.status(400).send("<p>Parameter missing: board_id</p>");
     return;
   }
 
-  res.status(200).send(boards.boards.has(req.params.board_id));
+  res.status(200).send(boards.boards.has(boardId));
   return;
 });
 

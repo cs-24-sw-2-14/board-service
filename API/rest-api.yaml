@@ -201,7 +201,7 @@ components:
         text/html:
           schema:
             type: string
-            example: "<p>Parameter missing: boardId</p>"
+            example: "<p>Parameter missing: board_id</p>"
     username_missing:
       description: Username was not supplied.
       content:
