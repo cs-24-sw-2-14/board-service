@@ -7,8 +7,11 @@ info:
   version: "1.0"
 
 servers:
-  - url: http://64.227.121.226
-  - url: http://127.0.0.1:5123
+  - url: http://localhost:5123
+  - url: http://magicboard.kresten.xyz:5123
+  - url: http://magicboard.stjernholm.pw:5123
+  - url: http://magicboard.fagerlund.io:5123
+  - url: http://magicboard.nygaard.cloud:5123
 
 tags:
   - name: Board
