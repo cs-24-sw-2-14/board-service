@@ -100,7 +100,31 @@ paths:
           $ref: '#/components/responses/username_missing'
         '404 Board not found':
           $ref: '#/components/responses/board_not_found'
-
+  
+  /v1/color/exists:
+    get:
+      tags:
+        - Color
+      summary: Checks whether a color already exists in a board.
+      description: Takes a color and a board id, and checks whether the color exists.
+      operationId: checkColor
+      parameters:
+        - $ref: '#/components/parameters/board_id'
+        - $ref: '#/components/parameters/color'
+      responses:
+        '200':
+          description: Whether the color exists.
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        '400 Missing BoardID':
+          $ref: '#/components/responses/board_id_missing'
+        '400 Missing Color':
+          $ref: '#/components/responses/color_missing'
+        '404 Board not found':
+          $ref: '#/components/responses/board_not_found'
 
   /v1/board/join:
     get:
@@ -143,6 +167,9 @@ components:
     username:
       type: string
       example: Testersen
+    color:
+      type: string
+      example: Blue
 
   parameters:
     board_id:
@@ -159,6 +186,13 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/username'
+    color:
+      name: color
+      in: query
+      description: Color value from available colors.
+      required: true
+      schema:
+        $ref: '#/components/schemas/color'
 
   responses:
     board_id_missing:
@@ -175,6 +209,13 @@ components:
           schema:
             type: string
             example: "<p>Parameter missing: username</p>"
+    color_missing:
+      description: Color was not supplied.
+      content:
+        text/html:
+          schema:
+            type: string
+            example: "<p>Parameter missing: color</p>"
     board_not_found:
       description: Provided board does not exist.
       content:
