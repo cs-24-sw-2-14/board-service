@@ -126,22 +126,6 @@ paths:
         '404 Board not found':
           $ref: '#/components/responses/board_not_found'
 
-  /v1/board/join:
-    get:
-      tags:
-        - Board
-      summary: Get invite to websocket server
-      operationId: joinBoard
-      parameters:
-        - $ref: '#/components/parameters/board_id'
-      responses:
-        '200':
-          description: Board joined??
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/board_join_result'
-
 components:
   schemas:
     board_id:
@@ -154,16 +138,6 @@ components:
       properties:
         board_id:
           $ref: '#/components/schemas/board_id'
-    board_join_result:
-      type: object
-      properties:
-        host:
-          type: string
-          format: ip
-          example: 127.0.0.1
-        port:
-          type: integer
-          example: 25565
     username:
       type: string
       example: Testersen
@@ -201,7 +175,7 @@ components:
         text/html:
           schema:
             type: string
-            example: "<p>Parameter missing: boardId</p>"
+            example: "<p>Parameter missing: board_id</p>"
     username_missing:
       description: Username was not supplied.
       content:
