@@ -26,7 +26,7 @@ let boards: Boards = new Boards(socketio);
  * @returns boardId - The unique id identifying the new board created
  */
 app.post("/v1/board/create", (_, res: Response) => {
-  res.send({ boardId: boards.createBoard() });
+  res.send({ board_id: boards.createBoard() });
   return;
 });
 
