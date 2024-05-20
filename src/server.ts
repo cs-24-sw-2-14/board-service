@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 var cors = require("cors");
 import { Server } from "socket.io";
 import { Boards } from "./boards";
-import { BoardId, Color, ColorName, Username } from "./types";
+import { BoardId, Color, Username } from "./types";
 const PORT = 5123;
 
 var corsOptions = {
@@ -33,7 +33,7 @@ app.post("/v1/board/create", (_, res: Response) => {
 app.get("/v1/board/exists", (req: Request, res: Response) => {
   const boardId = req.query.board_id as BoardId;
 
-  if (boardId === undefined){
+  if (boardId === undefined) {
     res.status(400).send("<p>Parameter missing: board_id</p>");
     return;
   }
@@ -45,21 +45,21 @@ app.get("/v1/board/exists", (req: Request, res: Response) => {
 app.get("/v1/user/exists", (req: Request, res: Response) => {
   const boardId = req.query.board_id as BoardId;
 
-  if (boardId === undefined){
+  if (boardId === undefined) {
     res.status(400).send("<p>Parameter missing: board_id</p>");
     return;
   }
 
   const username = req.query.username as Username;
 
-  if (username === undefined){
+  if (username === undefined) {
     res.status(400).send("<p>Parameter missing: username</p>");
     return;
   }
 
   const board = boards.boards.get(boardId);
 
-  if(board === undefined){
+  if (board === undefined) {
     res.status(404).send("Board does not exist");
     return;
   }
@@ -71,23 +71,23 @@ app.get("/v1/user/exists", (req: Request, res: Response) => {
 app.get("/v1/color/exists", (req: Request, res: Response) => {
   const boardId = req.query.board_id as BoardId;
 
-  if (boardId === undefined){
+  if (boardId === undefined) {
     res.status(400).send("<p>Parameter missing: board_id</p>");
     return;
   }
 
   const colorstring = req.query.color as string;
 
-  if (colorstring === undefined){
+  if (colorstring === undefined) {
     res.status(400).send("<p>Parameter missing: color</p>");
     return;
   }
 
-  const color = parseInt(colorstring)
+  const color = parseInt(colorstring) as Color;
 
   const board = boards.boards.get(boardId);
 
-  if(board === undefined){
+  if (board === undefined) {
     res.status(404).send("Board does not exist");
     return;
   }
