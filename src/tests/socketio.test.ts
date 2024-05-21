@@ -48,13 +48,13 @@ describe("BoardSocket Testing", () => {
 
     let data;
     try {
-      data = (await response.json()) as { boardId: BoardId };
+      data = (await response.json()) as { board_id: BoardId };
     } catch (err) {
       console.error(`Failed to parse JSON response: ${err}`);
       throw new Error(`Failed to parse JSON response: ${err}`);
     }
 
-    const boardId = data.boardId;
+    const boardId = data.board_id;
 
     clientSocket = ioc(`ws://localhost:${SERVER_PORT}/${boardId}`, {
       auth: {
