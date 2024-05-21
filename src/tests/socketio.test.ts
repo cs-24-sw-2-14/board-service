@@ -4,7 +4,7 @@ import { io as ioc, type Socket as ClientSocket } from "socket.io-client";
 import { type Socket as ServerSocket } from "socket.io";
 import fetch from "node-fetch";
 import { BoardId, CommandId } from "../types";
-import { EditEvent } from "../socketioInterfaces";
+import { EditEvent, RemoveEvent } from "../socketioInterfaces";
 
 const SERVER_PORT = 5123;
 const USERNAME = "tbdlarsen";
@@ -249,12 +249,6 @@ describe("BoardSocket Testing", () => {
       svgString:
         "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10L20,20' />",
     },
-    // {
-    //   commandId: 0,
-    //   position: { x: 0, y: 0 },
-    //   svgString:
-    //     "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10L20,20' />",
-    // },
   ];
 
   test.each(testCasesUndo)("undo - case %#", async (expected: EditEvent) => {
@@ -273,7 +267,27 @@ describe("BoardSocket Testing", () => {
     });
   });
 
+  it("undo - case 3", () => {
+    return new Promise<void>((resolve) => {
+      clientSocket.emit("undo", {
+        username: USERNAME,
+      });
+
+      clientSocket.on("remove", (data: RemoveEvent) => {
+        expect(data.commandId).toEqual(0);
+        clientSocket.off("remove");
+        resolve();
+      });
+    });
+  });
+
   const testCasesRedo: EditEvent[] = [
+    {
+      commandId: 0,
+      position: { x: 0, y: 0 },
+      svgString:
+        "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10L20,20' />",
+    },
     {
       commandId: 0,
       position: { x: 0, y: 0 },
