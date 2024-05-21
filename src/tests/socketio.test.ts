@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, test } from "vitest";
 import { server, socketio } from "../server"; // Ensure correct path
 import { io as ioc, type Socket as ClientSocket } from "socket.io-client";
 import { type Socket as ServerSocket } from "socket.io";
@@ -236,36 +236,68 @@ describe("BoardSocket Testing", () => {
     });
   });
 
-  it("undo", () => {
+  const testCasesUndo: EditEvent[] = [
+    {
+      commandId: 0,
+      position: { x: 0, y: 0 },
+      svgString:
+        "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
+    },
+    {
+      commandId: 0,
+      position: { x: 0, y: 0 },
+      svgString:
+        "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10L20,20' />",
+    },
+    // {
+    //   commandId: 0,
+    //   position: { x: 0, y: 0 },
+    //   svgString:
+    //     "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10L20,20' />",
+    // },
+  ];
+
+  test.each(testCasesUndo)("undo - case %#", async (expected: EditEvent) => {
     return new Promise<void>((resolve) => {
       clientSocket.emit("undo", {
         username: USERNAME,
       });
 
       clientSocket.on("edit", (data: EditEvent) => {
-        expect(data.commandId).toEqual(0);
-        expect(data.position).toEqual({ x: 0, y: 0 });
-        expect(data.svgString).toEqual(
-          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
-        );
+        expect(data.commandId).toEqual(expected.commandId);
+        expect(data.position).toEqual(expected.position);
+        expect(data.svgString).toEqual(expected.svgString);
         clientSocket.off("edit");
         resolve();
       });
     });
   });
 
-  it("redo", () => {
+  const testCasesRedo: EditEvent[] = [
+    {
+      commandId: 0,
+      position: { x: 0, y: 0 },
+      svgString:
+        "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
+    },
+    {
+      commandId: 0,
+      position: { x: 12, y: 12 },
+      svgString:
+        "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
+    },
+  ];
+
+  test.each(testCasesRedo)("redo - case %#", async (expected: EditEvent) => {
     return new Promise<void>((resolve) => {
       clientSocket.emit("redo", {
         username: USERNAME,
       });
 
       clientSocket.on("edit", (data: EditEvent) => {
-        expect(data.commandId).toEqual(0);
-        expect(data.position).toEqual({ x: 12, y: 12 });
-        expect(data.svgString).toEqual(
-          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
-        );
+        expect(data.commandId).toEqual(expected.commandId);
+        expect(data.position).toEqual(expected.position);
+        expect(data.svgString).toEqual(expected.svgString);
         clientSocket.off("edit");
         resolve();
       });
