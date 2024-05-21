@@ -10,12 +10,6 @@ const SERVER_PORT = 5123;
 const USERNAME = "tbdlarsen";
 const COLOR = 2;
 
-function waitFor(socket: ServerSocket | ClientSocket, event: string) {
-  return new Promise((resolve) => {
-    socket.once(event, resolve);
-  });
-}
-
 describe("BoardSocket Testing", () => {
   let serverSocket: ServerSocket;
   let clientSocket: ClientSocket;
@@ -26,10 +20,7 @@ describe("BoardSocket Testing", () => {
   beforeAll(async () => {
     if (!server.listening) {
       await new Promise<void>((resolve) => {
-        server.listen(SERVER_PORT, () => {
-          console.log("server is running");
-          resolve();
-        });
+        server.listen(SERVER_PORT, resolve);
       });
     }
 
@@ -116,7 +107,7 @@ describe("BoardSocket Testing", () => {
     });
   });
 
-  it("doDraw", () => {
+  it("doDraw 0", () => {
     return new Promise<void>((resolve) => {
       clientSocket.emit("doDraw", {
         position: { x: 10, y: 10 },
@@ -135,36 +126,72 @@ describe("BoardSocket Testing", () => {
     });
   });
 
-  // it("startErase", () => {
-  //   return new Promise<void>((resolve) => {
-  //     clientSocket.emit(
-  //       "startErase",
-  //       {
-  //         position: { x: 0, y: 0 },
-  //         commandIdsUnderCursor: 1,
-  //         threshold: 10,
-  //         username: USERNAME,
-  //       },
-  //       (commandId: CommandId) => {
-  //         expect(commandId).toEqual(0);
-  //       },
-  //     );
-  //
-  //     clientSocket.on("edit", (data: EditEvent) => {
-  //       expect(data.commandId).toEqual(0);
-  //       expect(data.position).toEqual({ x: 0, y: 0 });
-  //       expect(data.svgString).toEqual(
-  //         "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0' />",
-  //       );
-  //       clientSocket.off("edit");
-  //       resolve();
-  //     });
-  //   });
-  // });
+  it("doDraw 1", () => {
+    return new Promise<void>((resolve) => {
+      clientSocket.emit("doDraw", {
+        position: { x: 20, y: 20 },
+        commandId: 0,
+      });
 
-  //it("doErase")
+      clientSocket.on("edit", (data: EditEvent) => {
+        expect(data.commandId).toEqual(0);
+        expect(data.position).toEqual({ x: 0, y: 0 });
+        expect(data.svgString).toEqual(
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10L20,20' />",
+        );
+        clientSocket.off("edit");
+        resolve();
+      });
+    });
+  });
 
-  it("startMove");
+  it("startErase", () => {
+    return new Promise<void>((resolve) => {
+      clientSocket.emit(
+        "startErase",
+        {
+          position: { x: 8, y: 8 },
+          commandIdsUnderCursor: [0],
+          threshold: 1,
+          username: USERNAME,
+        },
+        (commandId: CommandId) => {
+          expect(commandId).toEqual(1);
+        },
+      );
+
+      clientSocket.on("edit", (data: EditEvent) => {
+        expect(data.commandId).toEqual(0);
+        expect(data.position).toEqual({ x: 0, y: 0 });
+        expect(data.svgString).toEqual(
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10L20,20' />",
+        );
+        clientSocket.off("edit");
+        resolve();
+      });
+    });
+  });
+
+  it("doErase", () => {
+    return new Promise<void>((resolve) => {
+      clientSocket.emit("doErase", {
+        position: { x: 10, y: 10 },
+        commandIdsUnderCursor: [0],
+        commandId: 1,
+      });
+
+      clientSocket.on("edit", (data: EditEvent) => {
+        expect(data.commandId).toEqual(0);
+        expect(data.position).toEqual({ x: 0, y: 0 });
+        expect(data.svgString).toEqual(
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
+        );
+        clientSocket.off("edit");
+        resolve();
+      });
+    });
+  });
+
   it("startMove", () => {
     return new Promise<void>((resolve) => {
       clientSocket.emit(
@@ -174,7 +201,7 @@ describe("BoardSocket Testing", () => {
           username: USERNAME,
         },
         (commandId: CommandId) => {
-          expect(commandId).toEqual(0);
+          expect(commandId).toEqual(2);
         },
       );
 
@@ -182,7 +209,7 @@ describe("BoardSocket Testing", () => {
         expect(data.commandId).toEqual(0);
         expect(data.position).toEqual({ x: 0, y: 0 });
         expect(data.svgString).toEqual(
-          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10' />",
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
         );
         clientSocket.off("edit");
         resolve();
@@ -194,14 +221,14 @@ describe("BoardSocket Testing", () => {
     return new Promise<void>((resolve) => {
       clientSocket.emit("doMove", {
         position: { x: 12, y: 12 },
-        commandId: 0,
+        commandId: 2,
       });
 
       clientSocket.on("edit", (data: EditEvent) => {
         expect(data.commandId).toEqual(0);
         expect(data.position).toEqual({ x: 12, y: 12 });
         expect(data.svgString).toEqual(
-          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10' />",
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
         );
         clientSocket.off("edit");
         resolve();
@@ -209,6 +236,39 @@ describe("BoardSocket Testing", () => {
     });
   });
 
-  it("undo");
-  it("redo");
+  it("undo", () => {
+    return new Promise<void>((resolve) => {
+      clientSocket.emit("undo", {
+        username: USERNAME,
+      });
+
+      clientSocket.on("edit", (data: EditEvent) => {
+        expect(data.commandId).toEqual(0);
+        expect(data.position).toEqual({ x: 0, y: 0 });
+        expect(data.svgString).toEqual(
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
+        );
+        clientSocket.off("edit");
+        resolve();
+      });
+    });
+  });
+
+  it("redo", () => {
+    return new Promise<void>((resolve) => {
+      clientSocket.emit("redo", {
+        username: USERNAME,
+      });
+
+      clientSocket.on("edit", (data: EditEvent) => {
+        expect(data.commandId).toEqual(0);
+        expect(data.position).toEqual({ x: 12, y: 12 });
+        expect(data.svgString).toEqual(
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0M20,20' />",
+        );
+        clientSocket.off("edit");
+        resolve();
+      });
+    });
+  });
 });
