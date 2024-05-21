@@ -3,9 +3,12 @@ import { server, socketio } from "../server"; // Ensure correct path
 import { io as ioc, type Socket as ClientSocket } from "socket.io-client";
 import { type Socket as ServerSocket } from "socket.io";
 import fetch from "node-fetch";
-import { BoardId } from "../types";
+import { BoardId, CommandId } from "../types";
+import { EditEvent } from "../socketioInterfaces";
 
-const SERVER_PORT = 51234;
+const SERVER_PORT = 5123;
+const USERNAME = "tbdlarsen";
+const COLOR = 2;
 
 function waitFor(socket: ServerSocket | ClientSocket, event: string) {
   return new Promise((resolve) => {
@@ -20,12 +23,18 @@ describe("BoardSocket Testing", () => {
   beforeAll(async () => {
     if (!server.listening) {
       await new Promise<void>((resolve) => {
-        server.listen(SERVER_PORT, resolve);
+        server.listen(SERVER_PORT, () => {
+          console.log("server is running");
+          resolve();
+        });
       });
     }
 
     const response = await fetch(
       `http://localhost:${SERVER_PORT}/v1/board/create`,
+      {
+        method: "POST",
+      },
     );
     if (!response.ok) {
       console.error(`Failed to fetch /v1/board/create: ${response.statusText}`);
@@ -46,8 +55,8 @@ describe("BoardSocket Testing", () => {
 
     clientSocket = ioc(`ws://localhost:${SERVER_PORT}/${boardId}`, {
       auth: {
-        username: "tbdlarsen",
-        color: "2",
+        username: USERNAME,
+        color: COLOR.toString(),
       },
     });
 
@@ -69,38 +78,50 @@ describe("BoardSocket Testing", () => {
     }
   });
 
-  it("should work", () => {
+  it("Draw test", () => {
     return new Promise<void>((resolve) => {
-      clientSocket.on("hello", (arg) => {
-        expect(arg).toEqual("world");
+      clientSocket.emit(
+        "startDraw",
+        {
+          position: { x: 0, y: 0 },
+          stroke: "000000",
+          fill: "transparent",
+          strokeWidth: 7,
+          username: USERNAME,
+        },
+        (commandId: CommandId) => {
+          expect(commandId).toEqual(0);
+        },
+      );
+
+      clientSocket.on("edit", (data: EditEvent) => {
+        expect(data.commandId).toEqual(0);
+        expect(data.position).toEqual({ x: 0, y: 0 });
+        expect(data.svgString).toEqual(
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0' />",
+        );
+        clientSocket.off("edit");
         resolve();
       });
-      serverSocket.emit("hello", "world");
     });
   });
 
-  it("should work with an acknowledgement", () => {
+  it("doDraw", () => {
     return new Promise<void>((resolve) => {
-      serverSocket.on("hi", (cb) => {
-        cb("hola");
+      clientSocket.emit("doDraw", {
+        position: { x: 10, y: 10 },
+        commandId: 0,
       });
-      clientSocket.emit("hi", (arg) => {
-        expect(arg).toEqual("hola");
+
+      clientSocket.on("edit", (data: EditEvent) => {
+        expect(data.commandId).toEqual(0);
+        expect(data.position).toEqual({ x: 0, y: 0 });
+        expect(data.svgString).toEqual(
+          "<path stroke='000000' fill='transparent' stroke-width='7' d='M0,0L10,10' />",
+        );
+        clientSocket.off("edit");
         resolve();
       });
     });
-  });
-
-  it("should work with emitWithAck()", async () => {
-    serverSocket.on("foo", (cb) => {
-      cb("bar");
-    });
-    const result = await clientSocket.emitWithAck("foo");
-    expect(result).toEqual("bar");
-  });
-
-  it("should work with waitFor()", () => {
-    clientSocket.emit("baz");
-    return waitFor(serverSocket, "baz");
   });
 });
