@@ -20,7 +20,6 @@ export enum Color {
 }
 
 export type CommandId = number;
-export type ColorName = string;
 export type ColorString = string;
 export type StrokeWidth = number;
 export type Threshold = number;
