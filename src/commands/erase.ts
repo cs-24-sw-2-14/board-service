@@ -56,17 +56,15 @@ export class EraseCommand implements Command {
       if (!this.erasedCommandIds.includes(commandId)) {
         this.erasedCommandIds.push(commandId);
       }
-      let command = this.stack.get(commandId)! as DrawCommand;
-      erasedCoordinates = command.path.eraseFromCoordinate(
+
+      let drawCommand = this.stack.get(commandId)! as DrawCommand;
+      erasedCoordinates = drawCommand.path.eraseFromCoordinate(
         coordinate,
         this.threshold,
       );
     });
     if (erasedCoordinates.length !== 0) {
-      this.erasedCoordinates = this.erasedCoordinates.concat(
-        this.erasedCoordinates,
-        erasedCoordinates,
-      );
+      this.erasedCoordinates = this.erasedCoordinates.concat(erasedCoordinates);
     }
   }
 

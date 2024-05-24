@@ -3,7 +3,7 @@ import { createServer } from "node:http";
 var cors = require("cors");
 import { Server } from "socket.io";
 import { Boards } from "./boards";
-import { BoardId, Username } from "./types";
+import { BoardId, Color, Username } from "./types";
 const PORT = 5123;
 
 var corsOptions = {
@@ -13,8 +13,8 @@ var corsOptions = {
 const app = express();
 app.use(express.json());
 app.use(cors(corsOptions));
-const server = createServer(app);
-const socketio = new Server(server, {
+export const server = createServer(app);
+export const socketio = new Server(server, {
   cors: {
     origin: "*",
   },
@@ -22,67 +22,79 @@ const socketio = new Server(server, {
 let boards: Boards = new Boards(socketio);
 
 app.post("/v1/board/create", (_, res: Response) => {
-  res.send({ boardId: boards.createBoard() });
+  res.send({ board_id: boards.createBoard() });
   return;
 });
 
-app.get("/v1/board/validateBoardId", (req: Request, res: Response) => {
-  const boardId = req.query.boardId as BoardId;
-  if (!boards.boards.has(boardId)) {
+app.get("/v1/board/exists", (req: Request, res: Response) => {
+  const boardId = req.query.board_id as BoardId;
+
+  if (boardId === undefined) {
+    res.status(400).send("<p>Parameter missing: board_id</p>");
+    return;
+  }
+
+  res.status(200).send(boards.boards.has(boardId));
+  return;
+});
+
+app.get("/v1/user/exists", (req: Request, res: Response) => {
+  const boardId = req.query.board_id as BoardId;
+
+  if (boardId === undefined) {
+    res.status(400).send("<p>Parameter missing: board_id</p>");
+    return;
+  }
+
+  const username = req.query.username as Username;
+
+  if (username === undefined) {
+    res.status(400).send("<p>Parameter missing: username</p>");
+    return;
+  }
+
+  const board = boards.boards.get(boardId);
+
+  if (board === undefined) {
     res.status(404).send("Board does not exist");
     return;
   }
-  res.status(200).send("Board is valid");
+
+  res.status(200).send(board.users.has(username));
   return;
 });
 
-app.get("/v1/board/validateUsername", (req: Request, res: Response) => {
-  const boardId = req.query.boardId as BoardId;
-  const username = req.query.username as Username;
-  if (boardId === undefined || username === undefined) {
-    res.status(400).send("Bad Request: Missing boardId or username");
-    return;
-  }
-  if (!boards.boards.has(boardId)) {
-    res.status(400).send("Bad Request: Board does not exist");
-    return;
-  }
-  const board = boards.boards.get(boardId)!;
+app.get("/v1/color/exists", (req: Request, res: Response) => {
+  const boardId = req.query.board_id as BoardId;
 
-  if (board.users.has(username)) {
-    res.status(409).send("Conflict: Username is Already taken");
-    return;
-  }
-  res.status(200).send("Username is available");
-});
-
-app.get("/v1/board/validateColor", (req: Request, res: Response) => {
-  const boardId = req.query.boardId as BoardId;
-  const colorString = req.query.color as string;
-
-  if (boardId === undefined || colorString === undefined) {
-    res.status(400).send("Bad Request: Missing boardId or color");
-    return;
-  }
-  const color = parseInt(colorString);
-  if (isNaN(color)) {
-    res.status(400).send("Bad Request: Color format invalid");
+  if (boardId === undefined) {
+    res.status(400).send("<p>Parameter missing: board_id</p>");
     return;
   }
 
-  if (!boards.boards.has(boardId)) {
-    res.status(400).send("Bad Request: Board does not exist");
+  const colorstring = req.query.color as string;
+
+  if (colorstring === undefined) {
+    res.status(400).send("<p>Parameter missing: color</p>");
     return;
   }
-  const board = boards.boards.get(boardId)!;
+
+  const color = parseInt(colorstring) as Color;
+
+  const board = boards.boards.get(boardId);
+
+  if (board === undefined) {
+    res.status(404).send("Board does not exist");
+    return;
+  }
 
   for (const [_, user] of board.users) {
     if (user.color === color) {
-      res.status(409).send("Conflict: Color is Already taken");
+      res.status(200).send(true);
       return;
     }
   }
-  res.status(200).send("Color is available");
+  res.status(200).send(false);
 });
 
 server.listen(PORT, () => {
