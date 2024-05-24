@@ -261,8 +261,8 @@ export class Board {
     const user = this.users.get(data.username);
     user!.color = data.color ?? user!.color;
     user!.position = data.position ?? user!.position;
-    this.namespace.volatile.emit("userChange", data);
-    this.initNamespace.volatile.emit("userChange", data);
+    this.namespace.emit("userChange", data);
+    this.initNamespace.emit("userChange", data);
   }
 }
 
