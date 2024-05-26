@@ -134,7 +134,7 @@ export class Board {
       data.fill,
       data.strokeWidth,
     );
-    this.controller.execute(command, data.username);
+    this.controller.execute(command);
     callback(command.commandId);
   }
 
@@ -167,7 +167,7 @@ export class Board {
 
     command.eraseFromDrawCommands(data.commandIdsUnderCursor, data.position);
 
-    this.controller.execute(command, data.username);
+    this.controller.execute(command);
     callback(command.commandId);
   }
 
@@ -199,7 +199,7 @@ export class Board {
       { x: 0, y: 0 },
       this.controller.stack.get(data.movedCommandId) as DrawCommand,
     );
-    this.controller.execute(command, data.username);
+    this.controller.execute(command);
     callback(command.commandId);
   }
   handleStartText(data: StartTextEvent, callback: StartAck) {
@@ -210,7 +210,7 @@ export class Board {
       data.username,
     );
 
-    this.controller.execute(command, data.username);
+    this.controller.execute(command);
     callback(command.commandId);
   }
 
