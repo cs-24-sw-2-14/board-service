@@ -7,11 +7,19 @@ info:
   version: "1.0"
 
 servers:
-  - url: http://64.227.121.226
+  - url: http://localhost:5123
+  - url: http://magicboard.kresten.xyz:5123
+  - url: http://magicboard.stjernholm.pw:5123
+  - url: http://magicboard.fagerlund.io:5123
+  - url: http://magicboard.nygaard.cloud:5123
 
 tags:
   - name: Board
     description: Related to boards which includes the functions for creating and managing boards (UID's)
+  - name: User
+    description: Related to users of boards.
+  - name: Color
+    description: Related to colors that are in use in a board.
 
 paths:
   /v1/board/validate_uid:
@@ -22,7 +30,7 @@ paths:
       description: Takes a board UID and validates it.
       operationId: validateUID
       parameters:
-        - $ref: '#/components/parameters/board_uid'
+        - $ref: '#/components/parameters/board_id'
       responses:
         '200':
           description: Whether Board UID is valid.
@@ -32,7 +40,7 @@ paths:
                 type: boolean
                 example: true
         '400':
-          $ref: '#/components/responses/board_uid_missing'
+          $ref: '#/components/responses/board_id_missing'
 
   /v1/board/exists:
     get:
@@ -42,7 +50,7 @@ paths:
       description: Takes a board UID and checks whether the board exists.
       operationId: checkUID
       parameters:
-        - $ref: '#/components/parameters/board_uid'
+        - $ref: '#/components/parameters/board_id'
       responses:
         '200':
           description: Whether the Board exists, based on Board UID.
@@ -52,7 +60,7 @@ paths:
                 type: boolean
                 example: true
         '400':
-          $ref: '#/components/responses/board_uid_missing'
+          $ref: '#/components/responses/board_id_missing'
 
   /v1/board/create:
     post:
@@ -67,26 +75,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/board_create_result'
-
-  /v1/board/join:
+  
+  /v1/user/exists:
     get:
       tags:
-        - Board
-      summary: Get invite to websocket server
-      operationId: joinBoard
+        - User
+      summary: Checks whether a user exists in a board.
+      description: Takes a username and checks whether the username is taken.
+      operationId: checkUsername
       parameters:
-        - $ref: '#/components/parameters/board_uid'
+        - $ref: '#/components/parameters/board_id'
+        - $ref: '#/components/parameters/username'
       responses:
         '200':
-          description: Board joined??
+          description: Whether the User exists.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/board_join_result'
+                type: boolean
+                example: true
+        '400 Missing BoardID':
+          $ref: '#/components/responses/board_id_missing'
+        '400 Missing Username':
+          $ref: '#/components/responses/username_missing'
+        '404 Board not found':
+          $ref: '#/components/responses/board_not_found'
+  
+  /v1/color/exists:
+    get:
+      tags:
+        - Color
+      summary: Checks whether a color already exists in a board.
+      description: Takes a color and a board id, and checks whether the color exists.
+      operationId: checkColor
+      parameters:
+        - $ref: '#/components/parameters/board_id'
+        - $ref: '#/components/parameters/color'
+      responses:
+        '200':
+          description: Whether the color exists.
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        '400 Missing BoardID':
+          $ref: '#/components/responses/board_id_missing'
+        '400 Missing Color':
+          $ref: '#/components/responses/color_missing'
+        '404 Board not found':
+          $ref: '#/components/responses/board_not_found'
 
 components:
   schemas:
-    board_uid:
+    board_id:
       type: string
       minLength: 6
       maxLength: 6
@@ -94,33 +136,64 @@ components:
     board_create_result:
       type: object
       properties:
-        board_uid:
-          $ref: '#/components/schemas/board_uid'
-    board_join_result:
-      type: object
-      properties:
-        host:
-          type: string
-          format: ip
-          example: 127.0.0.1
-        port:
-          type: integer
-          example: 25565
+        board_id:
+          $ref: '#/components/schemas/board_id'
+    username:
+      type: string
+      example: Testersen
+    color:
+      type: string
+      example: Blue
 
   parameters:
-    board_uid:
-      name: board_uid
+    board_id:
+      name: board_id
       in: query
       description: UID of a board.
       required: true
       schema:
-        $ref: '#/components/schemas/board_uid'
+        $ref: '#/components/schemas/board_id'
+    username:
+      name: username
+      in: query
+      description: Username of a user on a board.
+      required: true
+      schema:
+        $ref: '#/components/schemas/username'
+    color:
+      name: color
+      in: query
+      description: Color value from available colors.
+      required: true
+      schema:
+        $ref: '#/components/schemas/color'
 
   responses:
-    board_uid_missing:
+    board_id_missing:
       description: Board UID was not supplied.
       content:
         text/html:
           schema:
             type: string
-            example: <p>board_uid parameter missing.</p>
+            example: "<p>Parameter missing: board_id</p>"
+    username_missing:
+      description: Username was not supplied.
+      content:
+        text/html:
+          schema:
+            type: string
+            example: "<p>Parameter missing: username</p>"
+    color_missing:
+      description: Color was not supplied.
+      content:
+        text/html:
+          schema:
+            type: string
+            example: "<p>Parameter missing: color</p>"
+    board_not_found:
+      description: Provided board does not exist.
+      content:
+        text/html:
+          schema:
+            type: string
+            example: "Board does not exist"
