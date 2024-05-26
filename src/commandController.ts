@@ -18,7 +18,7 @@ export class CommandController {
    * Executes a command, adding in to the stack. Removes all undone elements belonging to user
    * @param newCommand - Command to be executed
    */
-  execute(command: Command, username: Username) {
+  execute(newCommand: Command) {
     for (const [commandId, command] of this.stack) {
       if (command.owner !== newCommand.owner || command.done) continue;
       this.stack.delete(commandId);
