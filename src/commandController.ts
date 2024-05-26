@@ -16,16 +16,15 @@ export class CommandController {
 
   /**
    * Executes a command, adding in to the stack. Removes all undone elements belonging to user
-   * @param command - Command to be executed
-   * @param username - user which executes the command
+   * @param newCommand - Command to be executed
    */
   execute(command: Command, username: Username) {
     for (const [commandId, command] of this.stack) {
-      if (command.owner !== username || command.done) continue;
+      if (command.owner !== newCommand.owner || command.done) continue;
       this.stack.delete(commandId);
     }
-    command.execute(this.namespace);
-    this.stack.set(command.commandId, command);
+    newCommand.execute(this.namespace);
+    this.stack.set(newCommand.commandId, newCommand);
   }
 
   /**
