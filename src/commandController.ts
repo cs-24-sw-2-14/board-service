@@ -1,9 +1,5 @@
 import { Namespace } from "socket.io";
 import { Command, CommandId, Username } from "./types";
-import { DrawCommand } from "./commands/draw";
-import { EraseCommand } from "./commands/erase";
-import { TextCommand } from "./commands/text";
-import { MoveCommand } from "./commands/move";
 
 /**
  * Controller which is responsible for executing, redoing and undoing commands
@@ -11,7 +7,7 @@ import { MoveCommand } from "./commands/move";
  * @param namespace - namespace instance of socketio, used to send events
  */
 export class CommandController {
-  stack: Map<CommandId, DrawCommand | EraseCommand | MoveCommand | TextCommand>;
+  stack: Map<CommandId, Command>;
   namespace: Namespace;
   constructor(namespace: Namespace) {
     this.stack = new Map();
@@ -22,7 +18,7 @@ export class CommandController {
    * Executes a command, adding in to the stack. Removes all undone elements belonging to user
    * @param newCommand - Command to be executed
    */
-  execute(newCommand: DrawCommand | EraseCommand | MoveCommand | TextCommand) {
+  execute(newCommand: Command) {
     for (const [commandId, command] of this.stack) {
       if (command.owner !== newCommand.owner || command.done) continue;
       this.stack.delete(commandId);
@@ -51,7 +47,7 @@ export class CommandController {
    * Redoes the oldest command undoed by the given user
    * @param username - user which redoes
    */
-  redo(username: string) {
+  redo(username: Username) {
     if (this.stack.size === 0) return;
     for (const [_, command] of this.stack) {
       if (command.owner !== username || command.done) continue;
