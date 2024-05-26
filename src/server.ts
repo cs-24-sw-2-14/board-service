@@ -13,8 +13,8 @@ var corsOptions = {
 const app = express();
 app.use(express.json());
 app.use(cors(corsOptions));
-const server = createServer(app);
-const socketio = new Server(server, {
+export const server = createServer(app);
+export const socketio = new Server(server, {
   cors: {
     origin: "*",
   },
