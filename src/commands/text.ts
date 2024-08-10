@@ -2,10 +2,10 @@ import { Namespace, Socket } from "socket.io";
 import { Command, CoordinateSet } from "../types";
 
 export class Text {
-  placement: CoordinateSet;
+  position: CoordinateSet;
   content: string;
-  constructor(placement: CoordinateSet, content: string) {
-    this.placement = placement;
+  constructor(position: CoordinateSet, content: string) {
+    this.position = position;
     this.content = content;
   }
 
@@ -26,11 +26,14 @@ export class TextCommand implements Command {
     this.done = true;
   }
   execute(socket: Namespace | Socket) {
-    socket.emit("edit", {
+    let obj = {
       svgString: this.text.stringify(),
-      placement: this.text.placement,
+      position: this.text.position,
       commandId: this.commandId,
-    });
+    };
+
+    socket.emit("edit", obj);
+    console.log("Text execute", obj);
   }
   undo(socket: Namespace | Socket) {
     // More sophisticated command behavior ?
