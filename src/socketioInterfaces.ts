@@ -7,6 +7,7 @@ import type {
   Username,
   SvgString,
   Color,
+  TextString,
 } from "./types";
 
 export interface InitServerToClientEvents {
@@ -29,7 +30,10 @@ export interface ClientToServerEvents {
   startMove: (data: StartMoveEvent, callback: StartAck) => void;
   doMove: (data: DoMoveEvent) => void;
   startText: (data: StartTextEvent, callback: StartAck) => void;
-  doText: (data: DoTextEvent, callback: StartAck) => void;
+  // The function startText takes data in the form of the interface StartTextEvent. 
+  // When the first is done, then StartAck is called. StartAck returns void (nothing). 
+  doText: (data: DoTextEvent) => void;
+  // The function doText takes data in the form of the interface DoTextEvent and returns void (nothing). 
   undo: (data: UndoEvent) => void;
   redo: (data: RedoEvent) => void;
   userChange: (data: UserChangeEvent) => void;
@@ -88,13 +92,19 @@ export interface DoMoveEvent {
 }
 
 export interface StartTextEvent {
+  // Interface StartTextEvent consists of position and username. 
   position: CanvasCoordinateSet;
+  // position is of the type CanvasCoordinateSet (number: x, y). 
   username: Username;
+  // username is of the type Username (string). 
 }
 
 export interface DoTextEvent {
+  // Interface DoTextEvent consists of commandId and content. 
   commandId: CommandId;
-  content: string;
+  // commandId is of the type CommandId (number). 
+  content: TextString;
+  // content is of the type string. 
 }
 
 export interface StartSuccessEvent {

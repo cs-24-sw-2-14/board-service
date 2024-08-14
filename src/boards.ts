@@ -3,6 +3,7 @@ import { DrawCommand } from "./commands/draw";
 import { EraseCommand } from "./commands/erase";
 import { CommandController } from "./commandController";
 import { MoveCommand } from "./commands/move";
+import { TextCommand, Text } from "./commands/text";
 import { User, BoardId, CommandId, Username } from "./types";
 import {
   StartAck,
@@ -22,7 +23,7 @@ import {
   DoTextEvent,
   StartTextEvent,
 } from "./socketioInterfaces";
-import { TextCommand, Text } from "./commands/text";
+
 
 /**
  * Represents a Board, keeping track of its users and commands.
@@ -202,6 +203,20 @@ export class Board {
     this.controller.execute(command);
     callback(command.commandId);
   }
+
+  /**
+   * Edits a MoveCommand, and executes it, to send changes to clients
+   * @param data, of interface DoMove
+   */
+  handleDoMove(data: DoMoveEvent) {
+    if (!this.controller.stack.get(data.commandId)) return;
+    const moveCommand = this.controller.stack.get(
+      data.commandId,
+    )! as MoveCommand;
+    moveCommand.movedOffset = data.position;
+    moveCommand.execute(this.namespace);
+  }
+
   handleStartText(data: StartTextEvent, callback: StartAck) {
     const text = new Text(data.position, "");
     const command = new TextCommand(
@@ -209,6 +224,7 @@ export class Board {
       text,
       data.username,
     );
+
 
     this.controller.execute(command);
     callback(command.commandId);
@@ -223,18 +239,6 @@ export class Board {
     textCommand.execute(this.namespace);
   }
 
-  /**
-   * Edits a MoveCommand, and executes it, to send changes to clients
-   * @param data, of interface DoMove
-   */
-  handleDoMove(data: DoMoveEvent) {
-    if (!this.controller.stack.get(data.commandId)) return;
-    const moveCommand = this.controller.stack.get(
-      data.commandId,
-    )! as MoveCommand;
-    moveCommand.movedOffset = data.position;
-    moveCommand.execute(this.namespace);
-  }
 
   /**
    * Executes the undo action for the given user
